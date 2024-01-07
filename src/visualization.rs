@@ -1,7 +1,7 @@
 use plotly::{
     color,
     common::{Font, Marker, Mode},
-    layout::{Legend, self},
+    layout::Legend,
     Layout, Plot, Scatter3D,
 };
 
