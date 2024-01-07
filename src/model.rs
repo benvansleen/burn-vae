@@ -83,7 +83,7 @@ impl<B: Backend> VAE<B> {
         &self,
         n: usize,
         device: &B::Device,
-    ) -> Vec<Vec<f32>> {
+    ) -> (Vec<Vec<f32>>, Vec<f32>) {
         let latent = Tensor::random(
             [n, 1, self.latent_dim],
             Distribution::Normal(0., 1.),
@@ -92,14 +92,25 @@ impl<B: Backend> VAE<B> {
         let output = self.decoder.forward(latent);
         let last_dim = output.dims()[2];
 
-        output
+        let output: Vec<Vec<_>> = output
             .into_data()
             .value
             .chunks(last_dim)
             .map(|chunk| {
                 chunk.iter().map(|x| x.elem()).collect()
             })
-            .collect()
+            .collect();
+
+        let mut ts = Vec::with_capacity(output.len());
+        let points = output
+            .into_iter()
+            .map(|mut v| {
+                ts.push(v.pop().unwrap());
+                v
+            })
+            .collect();
+
+        (points, ts)
     }
 }
 

@@ -6,7 +6,7 @@ use crossbeam_channel::{bounded, Receiver, Sender};
 use once_cell::sync::OnceCell;
 use pyo3::{prelude::*, types::IntoPyDict};
 
-pub const INPUT_DIM: usize = 3;
+pub const INPUT_DIM: usize = 4;
 type Point = [f32; INPUT_DIM];
 pub type PointTensor<B> = Tensor<B, 3>;
 pub type LatentTensor<B> = Tensor<B, 3>;
@@ -15,7 +15,7 @@ static CHAN: OnceCell<(
     Sender<SpiralItem>,
     Receiver<SpiralItem>,
 )> = OnceCell::new();
-static T: OnceCell<std::thread::JoinHandle<PyResult<()>>> =
+static T: OnceCell<std::thread::JoinHandle<()>> =
     OnceCell::new();
 
 #[derive(Debug, Clone)]
@@ -34,30 +34,40 @@ impl SpiralDataset {
         let (tx, rx) = CHAN.get_or_init(|| bounded(100_000));
         T.get_or_init(|| {
             std::thread::spawn(move || {
-                #[allow(unreachable_code)]
                 Python::with_gil(|py| {
-                    let ds = py.import("sklearn.datasets")?;
-                    let swiss = ds.getattr("make_swiss_roll")?;
+                    let ds =
+                        py.import("sklearn.datasets").unwrap();
+                    let swiss =
+                        ds.getattr("make_swiss_roll").unwrap();
                     let kwargs =
                         [("n_samples", 10_000)].into_py_dict(py);
 
                     loop {
-                        let data: (Vec<Point>, Vec<f32>) = swiss
-                            .call((), Some(kwargs))?
-                            .extract()?;
-                        let (points, _) = data;
+                        let (points, ts): (
+                            Vec<[f32; 3]>,
+                            Vec<f32>,
+                        ) = swiss
+                            .call((), Some(kwargs))
+                            .unwrap()
+                            .extract()
+                            .unwrap();
 
-                        points.into_iter().for_each(|point| {
-                            if tx
-                                .send(SpiralItem { point })
-                                .is_err()
-                            {
-                                std::thread::yield_now();
-                            }
-                        });
+                        points.into_iter().zip(ts).for_each(
+                            |(pt, t)| {
+                                if tx
+                                    .send(SpiralItem {
+                                        point: [
+                                            pt[0], pt[1], pt[2],
+                                            t,
+                                        ],
+                                    })
+                                    .is_err()
+                                {
+                                    std::thread::yield_now();
+                                }
+                            },
+                        );
                     }
-
-                    Ok::<(), PyErr>(())
                 })
             })
         });
