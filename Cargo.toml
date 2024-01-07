@@ -18,7 +18,9 @@ debug = true
 
 [profile.release]
 opt-level = 3
-# lto = true
+debug = false
+overflow-checks = false
+lto = "thin"
 # codegen-units = 1
 
 [dependencies.burn]

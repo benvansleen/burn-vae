@@ -14,7 +14,7 @@ use burn_vae::{
     mlp::MLPBlockConfig,
     model::{DecoderConfig, EncoderConfig, VAEConfig},
     train::{train, TrainingConfig},
-    visualization::plot,
+    visualization::{plot, Trace},
 };
 
 type Backend = Wgpu<AutoGraphicsApi, f32, i32>;
@@ -70,11 +70,27 @@ fn main() {
 
     const N: usize = 5000;
     const MAX_SIZE: usize = 128;
+
     let mut generated = Vec::new();
+    let mut gen_colors = Vec::new();
     (0..N).step_by(MAX_SIZE).for_each(|_| {
-        generated.extend(model.generate(MAX_SIZE, &device))
+        let (gen, t) = model.generate(MAX_SIZE, &device);
+        generated.extend(gen);
+        gen_colors.extend(t);
     });
-    let data = get_data(N);
-    let (pts, colors) = (data, [100.; N]);
-    plot((&pts, &generated), (&colors, &[0.; N]));
+
+    let true_data = get_data(N);
+    let mut true_colors = Vec::new();
+    let true_pts = true_data
+        .into_iter()
+        .map(|mut v| {
+            true_colors.push(v.pop().unwrap());
+            v
+        })
+        .collect();
+
+    plot(&[
+        Trace::new(generated, gen_colors, "generated"),
+        Trace::new(true_pts, true_colors, "true"),
+    ]);
 }

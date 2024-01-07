@@ -1,6 +1,8 @@
 use crate::{
     data::{SpiralBatch, SpiralBatcher, SpiralDataset},
-    metric::{KLLossMetric, ReconstructionLossMetric, VAEOutput},
+    metric::{
+        KLLossMetric, ReconstructionLossMetric, VAEOutput,
+    },
     model::{VAEConfig, VAE},
 };
 use burn::{

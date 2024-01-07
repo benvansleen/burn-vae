@@ -1,28 +1,51 @@
 use plotly::{
     color,
-    common::{Marker, Mode},
+    common::{Font, Marker, Mode},
+    layout::{Legend, self},
     Layout, Plot, Scatter3D,
 };
 
+pub struct Trace {
+    pts: Points,
+    colors: Vec<f32>,
+    name: &'static str,
+}
+
+impl Trace {
+    pub fn new(
+        pts: Points,
+        colors: Vec<f32>,
+        name: &'static str,
+    ) -> Self {
+        Self { pts, colors, name }
+    }
+}
+
 type Points = Vec<Vec<f32>>;
-pub fn plot(pts: (&Points, &Points), color: (&[f32], &[f32])) {
-    let (label, pred) = pts;
-    let (label_color, pred_color) = color;
-
-    let labels = trace(label, label_color, false);
-    let preds = trace(pred, pred_color, true);
-
-    let mut plot = Plot::new();
-    plot.set_layout(Layout::new().height(1000).width(1000));
-    plot.add_trace(labels);
-    plot.add_trace(preds);
-    plot.show();
+pub fn plot(traces: &[Trace]) {
+    let mut plt = Plot::new();
+    plt.set_layout(
+        Layout::new().height(1000).width(1000).legend(
+            Legend::default()
+                .background_color(color::NamedColor::White)
+                .font(
+                    Font::default()
+                        .color(color::NamedColor::Black)
+                        .size(24),
+                ),
+        ),
+    );
+    traces.iter().for_each(|t| {
+        let t = trace(&t.pts, &t.colors, t.name);
+        plt.add_trace(t);
+    });
+    plt.show();
 }
 
 fn trace(
     pts: &Points,
     color: &[f32],
-    generated: bool,
+    name: &str,
 ) -> Box<Scatter3D<f32, f32, f32>> {
     let (mut x, mut y, mut z) = (
         Vec::with_capacity(pts.len()),
@@ -35,20 +58,22 @@ fn trace(
         z.push(pt[2]);
     });
 
-    let color_fn = |c| {
-        if generated {
-            color::Rgb::new(
-                (c * 255.) as u8,
-                (c * 128.) as u8,
-                0,
-            )
-        } else {
-            color::Rgb::new(
-                0,
-                (c * 128.) as u8,
-                (c * 255.) as u8,
-            )
-        }
+    let color_fn = |c| match name {
+        "generated" => color::Rgb::new(
+            (c * 10.) as u8,
+            (c * 128.) as u8,
+            (c * 255.) as u8,
+        ),
+        "true" => color::Rgb::new(
+            (c * 200.) as u8,
+            (c * 100.) as u8,
+            (c * 100.) as u8,
+        ),
+        _ => color::Rgb::new(
+            (c * 0.) as u8,
+            (c * 0.) as u8,
+            (c * 200.) as u8,
+        ),
     };
 
     let c_max: f32 = color.iter().fold(0., |acc, &x| acc.max(x));
@@ -58,4 +83,5 @@ fn trace(
     Scatter3D::new(x, y, z)
         .marker(Marker::new().size(2).color_array(color))
         .mode(Mode::Markers)
+        .name(name)
 }
