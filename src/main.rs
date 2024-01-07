@@ -43,7 +43,7 @@ fn main() {
                         .with_bias(false),
                 ),
             )
-            .with_kl_weight(1e-1)
+            .with_kl_weight(1e0)
             .with_latent_dim(LATENT_DIM),
             AdamWConfig::new(),
         )
