@@ -20,7 +20,7 @@ debug = true
 opt-level = 3
 debug = false
 overflow-checks = false
-lto = "thin"
+# lto = "thin"
 # codegen-units = 1
 
 [dependencies.burn]

@@ -38,10 +38,17 @@ impl<B: Backend, const D: usize> MLPBlock<B, D> {
                     &self.norm_last
                 };
 
+                let orig = x.clone();
                 let mut x = layer.forward(x);
                 x = self.dropout.forward(x);
                 x = norm.forward(x);
-                self.activation.forward(x)
+                x = self.activation.forward(x);
+
+                if i > 0 && i < self.layers.len() - 1 {
+                    x = x + orig;
+                }
+
+                x
             },
         )
     }

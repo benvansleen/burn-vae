@@ -29,18 +29,18 @@ fn main() {
         TrainingConfig::new(
             VAEConfig::new(
                 EncoderConfig::new(
-                    MLPBlockConfig::new(3, 512, INPUT_DIM, 64)
+                    MLPBlockConfig::new(3, 128, INPUT_DIM, 32)
                         .with_dropout(0.1),
-                    LinearConfig::new(64, LATENT_DIM)
-                        .with_bias(false),
-                    LinearConfig::new(64, LATENT_DIM)
-                        .with_bias(false),
+                    LinearConfig::new(32, LATENT_DIM)
+                        .with_bias(true),
+                    LinearConfig::new(32, LATENT_DIM)
+                        .with_bias(true),
                 ),
                 DecoderConfig::new(
-                    MLPBlockConfig::new(4, 512, LATENT_DIM, 64)
+                    MLPBlockConfig::new(6, 128, LATENT_DIM, 64)
                         .with_dropout(0.1),
                     LinearConfig::new(64, INPUT_DIM)
-                        .with_bias(false),
+                        .with_bias(true),
                 ),
             )
             .with_kl_weight(1e0)
@@ -52,7 +52,7 @@ fn main() {
         .with_num_workers(4)
         .with_warmup_steps(500)
         .with_early_stop_patience(15)
-        .with_learning_rate(1e1),
+        .with_learning_rate(4e1),
         &device,
     );
 
