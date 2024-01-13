@@ -11,10 +11,11 @@ use burn::{
 #[derive(Module, Debug)]
 pub struct MLPBlock<B: Backend, const D: usize> {
     layers: Vec<Linear<B>>,
+    final_layer: Linear<B>,
     dropout: Dropout,
     activation: GELU,
     norm: LayerNorm<B>,
-    norm_last: LayerNorm<B>,
+    final_norm: LayerNorm<B>,
 }
 
 #[derive(Config, Debug)]
@@ -23,33 +24,35 @@ pub struct MLPBlockConfig {
     pub hidden_dim: usize,
     input_dim: usize,
     pub output_dim: usize,
-    #[config(default = "0.5")]
+    #[config(default = 0.5)]
     dropout: f64,
 }
 
 impl<B: Backend, const D: usize> MLPBlock<B, D> {
     pub fn forward(&self, x: Tensor<B, D>) -> Tensor<B, D> {
-        self.layers.iter().enumerate().fold(
-            x,
-            |x, (i, layer)| {
-                let norm = if i < self.layers.len() - 1 {
-                    &self.norm
-                } else {
-                    &self.norm_last
-                };
+        let x = self.layers.iter().fold(x, |x, layer| {
+            let input = x.clone();
+            let mut x = layer.forward(x);
+            x = self.dropout.forward(x);
+            x = self.norm.forward(x);
+            x = self.activation.forward(x);
+            if x.shape() == input.shape() {
+                x = x + input;
+            }
 
-                let mut x = layer.forward(x);
-                x = self.dropout.forward(x);
-                x = norm.forward(x);
-                self.activation.forward(x)
-            },
-        )
+            x
+        });
+
+        let mut x = self.final_layer.forward(x);
+        x = self.dropout.forward(x);
+        x = self.final_norm.forward(x);
+        self.activation.forward(x)
     }
 }
 
 impl MLPBlockConfig {
     fn build_layers(&self) -> Vec<LinearConfig> {
-        let mut layers = (0..self.n_layers - 1).fold(
+        (0..self.n_layers - 1).fold(
             vec![LinearConfig::new(
                 self.input_dim,
                 self.hidden_dim,
@@ -61,15 +64,9 @@ impl MLPBlockConfig {
                 ));
                 layers
             },
-        );
-
-        layers.push(LinearConfig::new(
-            self.hidden_dim,
-            self.output_dim,
-        ));
-
-        layers
+        )
     }
+
     pub fn init<B: Backend, const D: usize>(
         &self,
     ) -> MLPBlock<B, D> {
@@ -79,10 +76,15 @@ impl MLPBlockConfig {
                 .into_iter()
                 .map(|config| config.init())
                 .collect(),
+            final_layer: LinearConfig::new(
+                self.hidden_dim,
+                self.output_dim,
+            )
+            .init(),
             dropout: DropoutConfig::new(self.dropout).init(),
             activation: GELU::new(),
             norm: LayerNormConfig::new(self.hidden_dim).init(),
-            norm_last: LayerNormConfig::new(self.output_dim)
+            final_norm: LayerNormConfig::new(self.output_dim)
                 .init(),
         }
     }
@@ -98,12 +100,17 @@ impl MLPBlockConfig {
                 .zip(record.layers)
                 .map(|(config, layer)| config.init_with(layer))
                 .collect(),
+            final_layer: LinearConfig::new(
+                self.hidden_dim,
+                self.output_dim,
+            )
+            .init_with(record.final_layer),
             dropout: DropoutConfig::new(self.dropout).init(),
             activation: GELU::new(),
             norm: LayerNormConfig::new(self.hidden_dim)
                 .init_with(record.norm),
-            norm_last: LayerNormConfig::new(self.output_dim)
-                .init_with(record.norm_last),
+            final_norm: LayerNormConfig::new(self.output_dim)
+                .init_with(record.final_norm),
         }
     }
 }

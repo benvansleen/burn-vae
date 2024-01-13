@@ -66,7 +66,7 @@ pub fn train<B: AutodiffBackend>(
     let valid_loader = DataLoaderBuilder::new(valid_batcher)
         .batch_size(config.batch_size)
         .num_workers(config.num_workers)
-        .build(SpiralDataset::new(100));
+        .build(SpiralDataset::new(1000));
 
     let scheduler =
         NoamLrSchedulerConfig::new(config.learning_rate)
