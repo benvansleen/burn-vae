@@ -35,30 +35,26 @@ fn generate_data(n_samples: u32, tx: Sender<SpiralItem>) {
     Python::with_gil(|py| {
         let ds = py.import("sklearn.datasets").unwrap();
         let swiss = ds.getattr("make_swiss_roll").unwrap();
-        let kwargs =
-            [("n_samples", n_samples)].into_py_dict(py);
+        let kwargs = [("n_samples", n_samples)].into_py_dict(py);
 
         loop {
-            let (points, ts): (Vec<[f32; 3]>, Vec<f32>) =
-                swiss
-                    .call((), Some(kwargs))
-                    .unwrap()
-                    .extract()
-                    .unwrap();
+            let (points, ts): (Vec<[f32; 3]>, Vec<f32>) = swiss
+                .call((), Some(kwargs))
+                .unwrap()
+                .extract()
+                .unwrap();
 
-            points.into_iter().zip(ts).for_each(
-                |(pt, t)| {
-                    if tx
-                        .send(SpiralItem {
-                            point: pt,
-                            label: t,
-                        })
-                        .is_err()
-                        {
-                            std::thread::yield_now();
-                        }
-                },
-            );
+            points.into_iter().zip(ts).for_each(|(pt, t)| {
+                if tx
+                    .send(SpiralItem {
+                        point: pt,
+                        label: t,
+                    })
+                    .is_err()
+                {
+                    std::thread::yield_now();
+                }
+            });
         }
     })
 }
@@ -66,9 +62,11 @@ fn generate_data(n_samples: u32, tx: Sender<SpiralItem>) {
 impl SpiralDataset {
     pub fn new(epoch_size: usize) -> Self {
         let (tx, rx) = CHAN.get_or_init(|| bounded(1_000_000));
-        T.get_or_init(|| std::thread::spawn(move || {
-            generate_data(10, tx.clone());
-        }));
+        T.get_or_init(|| {
+            std::thread::spawn(move || {
+                generate_data(10, tx.clone());
+            })
+        });
 
         Self {
             epoch_size,

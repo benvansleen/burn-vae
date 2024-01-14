@@ -176,7 +176,11 @@ impl Metric for NvidiaUtilMetric {
     const NAME: &'static str = "GPU Utilization";
     type Input = ();
 
-    fn update(&mut self, _item: &(), _metadata: &MetricMetadata) -> MetricEntry {
+    fn update(
+        &mut self,
+        _item: &(),
+        _metadata: &MetricMetadata,
+    ) -> MetricEntry {
         let util = std::process::Command::new("nvidia-smi")
             .arg("--query-gpu=utilization.gpu")
             .arg("--format=csv,noheader,nounits")

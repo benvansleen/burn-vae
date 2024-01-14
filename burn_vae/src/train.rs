@@ -1,8 +1,8 @@
 use crate::{
     data::{SpiralBatch, SpiralBatcher, SpiralDataset},
     metric::{
-        KLLossMetric, ReconstructionLossMetric, VAEOutput,
-        NvidiaUtilMetric,
+        KLLossMetric, NvidiaUtilMetric,
+        ReconstructionLossMetric, VAEOutput,
     },
     model::{VAEConfig, VAE},
 };
@@ -17,7 +17,7 @@ use burn::{
     train::{
         metric::{
             store::{Aggregate, Direction, Split},
-            LossMetric, LearningRateMetric,
+            LearningRateMetric, LossMetric,
         },
         LearnerBuilder, MetricEarlyStoppingStrategy,
         StoppingCondition, TrainOutput, TrainStep, ValidStep,
