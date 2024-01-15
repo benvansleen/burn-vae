@@ -480,18 +480,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "burn-vae"
-version = "0.1.0"
-dependencies = [
- "burn",
- "crossbeam-channel",
- "once_cell",
- "plotly",
- "pyo3",
- "serde",
-]
-
-[[package]]
 name = "burn-wgpu"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -512,6 +500,18 @@ dependencies = [
  "spin",
  "text_placeholder",
  "wgpu",
+]
+
+[[package]]
+name = "burn_vae"
+version = "0.1.0"
+dependencies = [
+ "burn",
+ "flume 0.11.0",
+ "once_cell",
+ "plotly",
+ "pyo3",
+ "serde",
 ]
 
 [[package]]
@@ -3148,6 +3148,15 @@ dependencies = [
  "thread_local",
  "tracing-core",
  "tracing-log",
+]
+
+[[package]]
+name = "train_vae"
+version = "0.1.0"
+dependencies = [
+ "burn",
+ "burn_vae",
+ "rand",
 ]
 
 [[package]]

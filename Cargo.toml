@@ -1,16 +1,9 @@
-[package]
-name = "burn-vae"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-# [lib]
-# name = "burn_vae"
-# crate-type = ["cdylib"]
-
-# [[bin]]
-# name = "burn_vae"
-# path = "src/bin/main.rs"
+[workspace]
+resolver = "2"
+members = [
+  "burn_vae",
+  "train_vae",
+]
 
 [profile.dev]
 opt-level = 0
@@ -23,23 +16,10 @@ overflow-checks = false
 # lto = "thin"
 # codegen-units = 1
 
-[dependencies.burn]
+[workspace.dependencies]
+burn_vae = { path = "burn_vae" }
+
+[workspace.dependencies.burn]
 version = "0.11.1"
 default-features = false
 features = ["train", "tui", "wgpu"]
-
-[dependencies.pyo3]
-version = "0.19.0"
-default-features = false
-features = ["auto-initialize", "macros"]
-
-[dependencies.once_cell]
-version = "1.19.0"
-default-features = false
-features = ["std"]
-
-[dependencies]
-serde = "1"
-plotly = "0.8.4"
-crossbeam-channel = "0.5.10"
-

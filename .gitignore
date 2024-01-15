@@ -71,5 +71,6 @@ docs/_build/
 # Pyenv
 .python-version
 /.ipynb_checkpoints/
-/artifacts/
+/*artifacts*/
 /logs
+/notebooks/.ipynb_checkpoints/
