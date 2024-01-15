@@ -1,8 +1,9 @@
-LIB_DIR := burn_vae
+LIB_DIR := inference
 BUILD_DIR := model_artifacts
 NOTEBOOK_DIR := notebooks
 MODEL := $(BUILD_DIR)/model.mpk.gz
 
+.PHONY: notebook
 notebook: build
 	@echo "Starting notebook..."
 	@poetry run jupyter notebook --notebook-dir=$(NOTEBOOK_DIR)
@@ -14,10 +15,11 @@ build: $(MODEL) python_deps
 
 $(MODEL):
 	@echo "Training model"
-	@cargo run --release $(BUILD_DIR)
+	@cargo run --release $(BUILD_DIR) -p train
 
 .PHONY: python_deps
 python_deps:
+	@echo "Installing python dependencies"
 	@poetry install --no-root -q
 
 .PHONY: clean

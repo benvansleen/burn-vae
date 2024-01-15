@@ -1,9 +1,0 @@
-[package]
-name = "train_vae"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-burn_vae = { workspace = true }
-burn = { workspace = true }
-rand = "0.8.5"

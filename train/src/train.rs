@@ -1,11 +1,3 @@
-use crate::{
-    data::{SpiralBatch, SpiralBatcher, SpiralDataset},
-    metric::{
-        KLLossMetric, NvidiaUtilMetric,
-        ReconstructionLossMetric, VAEOutput,
-    },
-    model::{VAEConfig, VAE},
-};
 use burn::{
     config::Config,
     data::dataloader::DataLoaderBuilder,
@@ -13,20 +5,27 @@ use burn::{
     module::Module,
     optim::AdamWConfig,
     record::CompactRecorder,
-    tensor::backend::{AutodiffBackend, Backend},
+    tensor::backend::AutodiffBackend,
     train::{
         metric::{
             store::{Aggregate, Direction, Split},
             LearningRateMetric, LossMetric,
         },
         LearnerBuilder, MetricEarlyStoppingStrategy,
-        StoppingCondition, TrainOutput, TrainStep, ValidStep,
+        StoppingCondition,
     },
+};
+use dataset::{SpiralBatcher, SpiralDataset};
+use vae::{
+    metric::{
+        KLLossMetric, NvidiaUtilMetric, ReconstructionLossMetric,
+    },
+    ModelConfig,
 };
 
 #[derive(Config)]
 pub struct TrainingConfig {
-    pub model: VAEConfig,
+    pub model: ModelConfig,
     pub optimizer: AdamWConfig,
     #[config(default = 10)]
     pub num_epochs: usize,
@@ -112,28 +111,4 @@ pub fn train<B: AutodiffBackend>(
             &CompactRecorder::new(),
         )
         .expect("Trained model should be saved successfully");
-}
-
-impl<B: AutodiffBackend> TrainStep<SpiralBatch<B>, VAEOutput<B>>
-    for VAE<B>
-{
-    fn step(
-        &self,
-        batch: SpiralBatch<B>,
-    ) -> TrainOutput<VAEOutput<B>> {
-        let prediction =
-            self.forward(batch.points, batch.labels);
-        let loss = prediction.recon_loss.clone()
-            + prediction.kl_loss.clone();
-
-        TrainOutput::new(self, loss.backward(), prediction)
-    }
-}
-
-impl<B: Backend> ValidStep<SpiralBatch<B>, VAEOutput<B>>
-    for VAE<B>
-{
-    fn step(&self, batch: SpiralBatch<B>) -> VAEOutput<B> {
-        self.forward(batch.points, batch.labels)
-    }
 }

@@ -1,5 +1,4 @@
 use crate::{
-    data::{LatentTensor, PointTensor},
     loss::KLLoss,
     metric::VAEOutput,
     mlp::{MLPBlock, MLPBlockConfig},
@@ -9,10 +8,12 @@ use burn::{
     module::Module,
     nn::{loss::MSELoss, loss::Reduction, Linear, LinearConfig},
     tensor::{
-        backend::Backend, Distribution, ElementConversion,
-        Tensor,
+        backend::{AutodiffBackend, Backend},
+        Distribution, ElementConversion, Tensor,
     },
+    train::{TrainOutput, TrainStep, ValidStep},
 };
+use dataset::{LatentTensor, PointTensor, SpiralBatch};
 
 #[derive(Module, Debug)]
 pub struct VAE<B: Backend> {
@@ -209,5 +210,29 @@ impl<B: Backend> Decoder<B> {
     ) -> LatentTensor<B> {
         let x = self.block.forward(input);
         self.fc.forward(x)
+    }
+}
+
+impl<B: AutodiffBackend> TrainStep<SpiralBatch<B>, VAEOutput<B>>
+    for VAE<B>
+{
+    fn step(
+        &self,
+        batch: SpiralBatch<B>,
+    ) -> TrainOutput<VAEOutput<B>> {
+        let prediction =
+            self.forward(batch.points, batch.labels);
+        let loss = prediction.recon_loss.clone()
+            + prediction.kl_loss.clone();
+
+        TrainOutput::new(self, loss.backward(), prediction)
+    }
+}
+
+impl<B: Backend> ValidStep<SpiralBatch<B>, VAEOutput<B>>
+    for VAE<B>
+{
+    fn step(&self, batch: SpiralBatch<B>) -> VAEOutput<B> {
+        self.forward(batch.points, batch.labels)
     }
 }

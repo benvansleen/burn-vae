@@ -503,18 +503,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "burn_vae"
-version = "0.1.0"
-dependencies = [
- "burn",
- "flume 0.11.0",
- "once_cell",
- "plotly",
- "pyo3",
- "serde",
-]
-
-[[package]]
 name = "bytemuck"
 version = "1.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -895,6 +883,16 @@ dependencies = [
  "lock_api",
  "once_cell",
  "parking_lot_core",
+]
+
+[[package]]
+name = "dataset"
+version = "0.1.0"
+dependencies = [
+ "burn",
+ "flume 0.11.0",
+ "once_cell",
+ "pyo3",
 ]
 
 [[package]]
@@ -1560,7 +1558,7 @@ dependencies = [
  "iana-time-zone-haiku",
  "js-sys",
  "wasm-bindgen",
- "windows-core 0.52.0",
+ "windows-core",
 ]
 
 [[package]]
@@ -1639,6 +1637,17 @@ name = "indoc"
 version = "2.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1e186cfbae8084e513daff4240b4797e342f988cecda4fb6c939150f96315fd8"
+
+[[package]]
+name = "inference"
+version = "0.1.0"
+dependencies = [
+ "burn",
+ "once_cell",
+ "pyo3",
+ "train",
+ "vae",
+]
 
 [[package]]
 name = "inout"
@@ -3151,12 +3160,15 @@ dependencies = [
 ]
 
 [[package]]
-name = "train_vae"
+name = "train"
 version = "0.1.0"
 dependencies = [
  "burn",
- "burn_vae",
+ "dataset",
+ "plotly",
  "rand",
+ "serde",
+ "vae",
 ]
 
 [[package]]
@@ -3262,6 +3274,15 @@ checksum = "5e395fcf16a7a3d8127ec99782007af141946b4795001f876d54fb0d55978560"
 dependencies = [
  "getrandom",
  "rand",
+]
+
+[[package]]
+name = "vae"
+version = "0.1.0"
+dependencies = [
+ "burn",
+ "dataset",
+ "serde",
 ]
 
 [[package]]
@@ -3521,7 +3542,7 @@ version = "0.51.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca229916c5ee38c2f2bc1e9d8f04df975b4bd93f9955dc69fabb5d91270045c9"
 dependencies = [
- "windows-core 0.51.1",
+ "windows-core",
  "windows-targets 0.48.5",
 ]
 
@@ -3532,15 +3553,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1f8cf84f35d2db49a46868f947758c7a1138116f7fac3bc844f43ade1292e64"
 dependencies = [
  "windows-targets 0.48.5",
-]
-
-[[package]]
-name = "windows-core"
-version = "0.52.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33ab640c8d7e35bf8ba19b884ba838ceb4fba93a4e8c65a9059d08afcfc683d9"
-dependencies = [
- "windows-targets 0.52.0",
 ]
 
 [[package]]

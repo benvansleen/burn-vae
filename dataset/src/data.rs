@@ -1,29 +1,12 @@
+use crate::{generate::SpiralItem, workers};
 use burn::{
     data::{dataloader::batcher::Batcher, dataset::Dataset},
     tensor::{backend::Backend, Tensor},
 };
-use flume::{bounded, Receiver, Sender};
-use once_cell::sync::OnceCell;
-use pyo3::{prelude::*, types::IntoPyDict};
+use flume::Receiver;
 
-pub const INPUT_DIM: usize = 3;
-pub const LABEL_DIM: usize = 1;
-type Point = [f32; INPUT_DIM];
 pub type PointTensor<B> = Tensor<B, 3>;
 pub type LatentTensor<B> = Tensor<B, 3>;
-
-static CHAN: OnceCell<(
-    Sender<SpiralItem>,
-    Receiver<SpiralItem>,
-)> = OnceCell::new();
-static T: OnceCell<[std::thread::JoinHandle<()>; 2]> =
-    OnceCell::new();
-
-#[derive(Debug, Clone)]
-pub struct SpiralItem {
-    pub point: Point,
-    pub label: f32,
-}
 
 #[derive(Debug, Clone)]
 pub struct SpiralDataset {
@@ -31,45 +14,11 @@ pub struct SpiralDataset {
     ch: Receiver<SpiralItem>,
 }
 
-fn generate_data(n_samples: u32, tx: Sender<SpiralItem>) {
-    Python::with_gil(|py| {
-        let ds = py.import("sklearn.datasets").unwrap();
-        let swiss = ds.getattr("make_swiss_roll").unwrap();
-        let kwargs = [("n_samples", n_samples)].into_py_dict(py);
-
-        loop {
-            let (points, ts): (Vec<[f32; 3]>, Vec<f32>) = swiss
-                .call((), Some(kwargs))
-                .unwrap()
-                .extract()
-                .unwrap();
-
-            points.into_iter().zip(ts).for_each(|(pt, t)| {
-                tx.send(SpiralItem {
-                    point: pt,
-                    label: t,
-                })
-                .expect("failed to send item to channel");
-            });
-        }
-    })
-}
-
 impl SpiralDataset {
     pub fn new(epoch_size: usize) -> Self {
-        let (tx, rx) = CHAN.get_or_init(|| bounded(10_000_000));
-        T.get_or_init(|| {
-            std::array::from_fn(|_| {
-                let tx = tx.clone();
-                std::thread::spawn(move || {
-                    generate_data(1000, tx);
-                })
-            })
-        });
-
         Self {
             epoch_size,
-            ch: rx.clone(),
+            ch: workers::init(),
         }
     }
 }
