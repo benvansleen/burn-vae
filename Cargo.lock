@@ -507,7 +507,7 @@ name = "burn_vae"
 version = "0.1.0"
 dependencies = [
  "burn",
- "crossbeam-channel",
+ "flume 0.11.0",
  "once_cell",
  "plotly",
  "pyo3",

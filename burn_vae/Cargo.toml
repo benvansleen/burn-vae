@@ -16,9 +16,12 @@ version = "1.19.0"
 default-features = false
 features = ["std"]
 
+[dependencies.flume]
+version = "0.11.0"
+default-features = false
+
 [dependencies]
 burn = { workspace = true }
 serde = "1"
 plotly = "0.8.4"
-crossbeam-channel = "0.5.10"
 

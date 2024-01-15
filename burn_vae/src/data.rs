@@ -1,8 +1,8 @@
 use burn::{
     data::{dataloader::batcher::Batcher, dataset::Dataset},
-    tensor::{backend::Backend, Data, Tensor},
+    tensor::{backend::Backend, Tensor},
 };
-use crossbeam_channel::{bounded, Receiver, Sender};
+use flume::{bounded, Receiver, Sender};
 use once_cell::sync::OnceCell;
 use pyo3::{prelude::*, types::IntoPyDict};
 
@@ -16,7 +16,7 @@ static CHAN: OnceCell<(
     Sender<SpiralItem>,
     Receiver<SpiralItem>,
 )> = OnceCell::new();
-static T: OnceCell<std::thread::JoinHandle<()>> =
+static T: OnceCell<[std::thread::JoinHandle<()>; 2]> =
     OnceCell::new();
 
 #[derive(Debug, Clone)]
@@ -45,15 +45,11 @@ fn generate_data(n_samples: u32, tx: Sender<SpiralItem>) {
                 .unwrap();
 
             points.into_iter().zip(ts).for_each(|(pt, t)| {
-                if tx
-                    .send(SpiralItem {
-                        point: pt,
-                        label: t,
-                    })
-                    .is_err()
-                {
-                    std::thread::yield_now();
-                }
+                tx.send(SpiralItem {
+                    point: pt,
+                    label: t,
+                })
+                .expect("failed to send item to channel");
             });
         }
     })
@@ -61,10 +57,13 @@ fn generate_data(n_samples: u32, tx: Sender<SpiralItem>) {
 
 impl SpiralDataset {
     pub fn new(epoch_size: usize) -> Self {
-        let (tx, rx) = CHAN.get_or_init(|| bounded(1_000_000));
+        let (tx, rx) = CHAN.get_or_init(|| bounded(10_000_000));
         T.get_or_init(|| {
-            std::thread::spawn(move || {
-                generate_data(10, tx.clone());
+            std::array::from_fn(|_| {
+                let tx = tx.clone();
+                std::thread::spawn(move || {
+                    generate_data(1000, tx);
+                })
             })
         });
 
@@ -110,14 +109,8 @@ impl<B: Backend> Batcher<SpiralItem, SpiralBatch<B>>
             .iter()
             .map(|item| {
                 (
-                    Data::<f32, 1>::from(item.point),
-                    Data::<f32, 1>::from([item.label]),
-                )
-            })
-            .map(|(p, l)| {
-                (
-                    Tensor::<B, 1>::from_data(p.convert()),
-                    Tensor::<B, 1>::from_data(l.convert()),
+                    Tensor::<B, 1>::from_floats(item.point),
+                    Tensor::<B, 1>::from_floats([item.label]),
                 )
             })
             .map(|(p, l)| {

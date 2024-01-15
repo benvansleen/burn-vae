@@ -22,11 +22,9 @@ type Backend = Wgpu<AutoGraphicsApi, f32, i32>;
 
 fn main() {
     let device = WgpuDevice::BestAvailable;
-    let args: Vec<String> = std::env::args().collect();
-    let artifacts_dir = match args.last() {
-        Some(dir) => dir,
-        None => "artifacts",
-    };
+    let artifacts_dir = &std::env::args()
+        .nth(1)
+        .unwrap_or("artifacts".to_string());
 
     const LATENT_DIM: usize = 2;
     train::<Autodiff<Backend>>(
@@ -58,7 +56,7 @@ fn main() {
             AdamWConfig::new(),
         )
         .with_num_epochs(1000)
-        .with_batch_size(512)
+        .with_batch_size(1024)
         .with_num_workers(4)
         .with_warmup_steps(500)
         .with_early_stop_patience(15)
