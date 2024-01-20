@@ -11,15 +11,12 @@ use burn::{
             store::{Aggregate, Direction, Split},
             LearningRateMetric, LossMetric,
         },
-        LearnerBuilder, MetricEarlyStoppingStrategy,
-        StoppingCondition,
+        LearnerBuilder, MetricEarlyStoppingStrategy, StoppingCondition,
     },
 };
 use dataset::{SpiralBatcher, SpiralDataset};
 use vae::{
-    metric::{
-        KLLossMetric, NvidiaUtilMetric, ReconstructionLossMetric,
-    },
+    metric::{KLLossMetric, NvidiaUtilMetric, ReconstructionLossMetric},
     ModelConfig,
 };
 
@@ -68,13 +65,10 @@ pub fn train<B: AutodiffBackend>(
         .num_workers(config.num_workers)
         .build(SpiralDataset::new(10_000));
 
-    let scheduler =
-        NoamLrSchedulerConfig::new(config.learning_rate)
-            .with_warmup_steps(config.warmup_steps)
-            .with_model_size(
-                config.model.encoder.block_config.hidden_dim,
-            )
-            .init();
+    let scheduler = NoamLrSchedulerConfig::new(config.learning_rate)
+        .with_warmup_steps(config.warmup_steps)
+        .with_model_size(config.model.encoder.block_config.hidden_dim)
+        .init();
 
     let learner = LearnerBuilder::new(artifact_dir)
         .metric_train_numeric(LossMetric::new())
@@ -86,9 +80,7 @@ pub fn train<B: AutodiffBackend>(
         .metric_train_numeric(LearningRateMetric::new())
         .metric_train_numeric(NvidiaUtilMetric::new())
         .with_file_checkpointer(CompactRecorder::new())
-        .early_stopping(MetricEarlyStoppingStrategy::new::<
-            LossMetric<B>,
-        >(
+        .early_stopping(MetricEarlyStoppingStrategy::new::<LossMetric<B>>(
             Aggregate::Mean,
             Direction::Lowest,
             Split::Valid,

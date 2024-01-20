@@ -1,5 +1,5 @@
-mod point;
 mod generate;
+mod point;
 mod workers;
 mod data;
 

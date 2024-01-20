@@ -15,11 +15,7 @@ pub struct Trace {
 }
 
 impl Trace {
-    pub fn new(
-        pts: Points,
-        colors: Vec<f32>,
-        name: &'static str,
-    ) -> Self {
+    pub fn new(pts: Points, colors: Vec<f32>, name: &'static str) -> Self {
         Self { pts, colors, name }
     }
 }

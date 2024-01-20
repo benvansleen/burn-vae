@@ -2,8 +2,7 @@ use burn::{
     tensor::{backend::Backend, ElementConversion, Tensor},
     train::metric::{
         state::{FormatOptions, NumericMetricState},
-        Adaptor, LossInput, Metric, MetricEntry, MetricMetadata,
-        Numeric,
+        Adaptor, LossInput, Metric, MetricEntry, MetricMetadata, Numeric,
     },
 };
 
@@ -13,10 +12,7 @@ pub struct VAEOutput<B: Backend> {
 }
 
 impl<B: Backend> VAEOutput<B> {
-    pub fn new(
-        recon_loss: Tensor<B, 1>,
-        kl_loss: Tensor<B, 1>,
-    ) -> Self {
+    pub fn new(recon_loss: Tensor<B, 1>, kl_loss: Tensor<B, 1>) -> Self {
         Self {
             recon_loss,
             kl_loss,
@@ -26,15 +22,11 @@ impl<B: Backend> VAEOutput<B> {
 
 impl<B: Backend> Adaptor<LossInput<B>> for VAEOutput<B> {
     fn adapt(&self) -> LossInput<B> {
-        LossInput::new(
-            self.kl_loss.clone() + self.recon_loss.clone(),
-        )
+        LossInput::new(self.kl_loss.clone() + self.recon_loss.clone())
     }
 }
 
-impl<B: Backend> Adaptor<ReconstructionLossInput<B>>
-    for VAEOutput<B>
-{
+impl<B: Backend> Adaptor<ReconstructionLossInput<B>> for VAEOutput<B> {
     fn adapt(&self) -> ReconstructionLossInput<B> {
         ReconstructionLossInput::new(self.recon_loss.clone())
     }

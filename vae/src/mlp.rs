@@ -2,8 +2,8 @@ use burn::{
     config::Config,
     module::Module,
     nn::{
-        Dropout, DropoutConfig, LayerNorm, LayerNormConfig,
-        Linear, LinearConfig, GELU,
+        Dropout, DropoutConfig, LayerNorm, LayerNormConfig, Linear,
+        LinearConfig, GELU,
     },
     tensor::{backend::Backend, Tensor},
 };
@@ -53,10 +53,7 @@ impl<B: Backend, const D: usize> MLPBlock<B, D> {
 impl MLPBlockConfig {
     fn build_layers(&self) -> Vec<LinearConfig> {
         (0..self.n_layers - 1).fold(
-            vec![LinearConfig::new(
-                self.input_dim,
-                self.hidden_dim,
-            )],
+            vec![LinearConfig::new(self.input_dim, self.hidden_dim)],
             |mut layers, _| {
                 layers.push(LinearConfig::new(
                     self.hidden_dim,
@@ -67,9 +64,7 @@ impl MLPBlockConfig {
         )
     }
 
-    pub fn init<B: Backend, const D: usize>(
-        &self,
-    ) -> MLPBlock<B, D> {
+    pub fn init<B: Backend, const D: usize>(&self) -> MLPBlock<B, D> {
         MLPBlock {
             layers: self
                 .build_layers()
@@ -84,8 +79,7 @@ impl MLPBlockConfig {
             dropout: DropoutConfig::new(self.dropout).init(),
             activation: GELU::new(),
             norm: LayerNormConfig::new(self.hidden_dim).init(),
-            final_norm: LayerNormConfig::new(self.output_dim)
-                .init(),
+            final_norm: LayerNormConfig::new(self.output_dim).init(),
         }
     }
 

@@ -6,14 +6,9 @@ use burn::{
 };
 use vae::Model;
 
-pub fn load_model<B: Backend>(
-    dir: &str,
-    device: &Device<B>,
-) -> Model<B> {
-    let config = crate::TrainingConfig::load(format!(
-        "{dir}/config.json"
-    ))
-    .expect("Config file not found");
+pub fn load_model<B: Backend>(dir: &str, device: &Device<B>) -> Model<B> {
+    let config = crate::TrainingConfig::load(format!("{dir}/config.json"))
+        .expect("Config file not found");
     let record = burn::record::CompactRecorder::new()
         .load(format!("{dir}/model").into())
         .expect("Model not found");
