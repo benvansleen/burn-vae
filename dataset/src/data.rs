@@ -1,12 +1,9 @@
-use crate::{generate::SpiralItem, workers};
+use crate::{point::{Point, SpiralItem}, workers};
 use burn::{
     data::{dataloader::batcher::Batcher, dataset::Dataset},
     tensor::{backend::Backend, Tensor},
 };
 use flume::Receiver;
-
-pub type PointTensor<B> = Tensor<B, 3>;
-pub type LatentTensor<B> = Tensor<B, 3>;
 
 #[derive(Debug, Clone)]
 pub struct SpiralDataset {
@@ -46,7 +43,7 @@ impl<B: Backend> SpiralBatcher<B> {
 
 #[derive(Debug, Clone)]
 pub struct SpiralBatch<B: Backend> {
-    pub points: PointTensor<B>,
+    pub points: Tensor<B, 3>,
     pub labels: Tensor<B, 2>,
 }
 
@@ -80,10 +77,10 @@ impl<B: Backend> Batcher<SpiralItem, SpiralBatch<B>>
     }
 }
 
-pub fn get_data(n: usize) -> (Vec<Vec<f32>>, Vec<f32>) {
+pub fn get_data(n: usize) -> (Vec<Point>, Vec<f32>) {
     let dataset = SpiralDataset::new(n);
     (0..n)
         .map(|i| dataset.get(i).unwrap())
-        .map(|item| (item.point.to_vec(), item.label))
+        .map(|item| (item.point, item.label))
         .unzip()
 }

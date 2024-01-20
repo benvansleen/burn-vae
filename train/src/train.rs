@@ -62,7 +62,7 @@ pub fn train<B: AutodiffBackend>(
     let train_loader = DataLoaderBuilder::new(train_batcher)
         .batch_size(config.batch_size)
         .num_workers(config.num_workers)
-        .build(SpiralDataset::new(100_000));
+        .build(SpiralDataset::new(10_000));
     let valid_loader = DataLoaderBuilder::new(valid_batcher)
         .batch_size(config.batch_size)
         .num_workers(config.num_workers)

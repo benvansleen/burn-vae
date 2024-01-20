@@ -1,4 +1,7 @@
-use crate::generate::{generate_data, SpiralItem};
+use crate::{
+    generate::generate_data,
+    point::SpiralItem,
+};
 use flume::{bounded, Receiver, Sender};
 use once_cell::sync::OnceCell;
 

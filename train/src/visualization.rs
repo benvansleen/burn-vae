@@ -1,9 +1,12 @@
+use dataset::Point;
 use plotly::{
     color,
     common::{Font, Marker, Mode},
     layout::Legend,
     Layout, Plot, Scatter3D,
 };
+
+type Points = Vec<Point>;
 
 pub struct Trace {
     pts: Points,
@@ -21,7 +24,6 @@ impl Trace {
     }
 }
 
-type Points = Vec<Vec<f32>>;
 pub fn plot(traces: &[Trace]) {
     let mut plt = Plot::new();
     plt.set_layout(

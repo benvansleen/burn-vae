@@ -7,6 +7,7 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
+dataset = { workspace = true }
 train = { workspace = true }
 vae = { workspace = true }
 pyo3 = { workspace = true }

@@ -9,11 +9,13 @@ use burn::{
     nn::{loss::MSELoss, loss::Reduction, Linear, LinearConfig},
     tensor::{
         backend::{AutodiffBackend, Backend},
-        Distribution, ElementConversion, Tensor,
+        Distribution, Tensor,
     },
     train::{TrainOutput, TrainStep, ValidStep},
 };
-use dataset::{LatentTensor, PointTensor, SpiralBatch};
+use dataset::{Point, ToPoints, ToVec, SpiralBatch};
+
+type Batches<B> = Tensor<B, 3>;
 
 #[derive(Module, Debug)]
 pub struct VAE<B: Backend> {
@@ -59,7 +61,7 @@ impl VAEConfig {
 impl<B: Backend> VAE<B> {
     pub fn forward(
         &self,
-        x: PointTensor<B>,
+        x: Batches<B>,
         y: Tensor<B, 2>,
     ) -> VAEOutput<B> {
         let batchsize = x.dims()[0] as i32;
@@ -94,7 +96,7 @@ impl<B: Backend> VAE<B> {
         t: f32,
         n: usize,
         device: &B::Device,
-    ) -> Vec<Vec<f32>> {
+    ) -> Vec<Point> {
         let latent = Tensor::random(
             [n, 1, self.latent_dim],
             Distribution::Normal(0., 1.),
@@ -107,18 +109,24 @@ impl<B: Backend> VAE<B> {
 
         let latent = Tensor::cat(vec![latent, t], 2);
         let output = self.decoder.forward(latent);
-        let last_dim = output.dims()[2];
 
-        let output: Vec<Vec<_>> = output
-            .into_data()
-            .value
-            .chunks(last_dim)
-            .map(|chunk| {
-                chunk.iter().map(|x| x.elem()).collect()
-            })
-            .collect();
+        output.to_points()
+    }
 
-        output
+    pub fn encode(
+        &self,
+        x: Vec<Point>,
+    ) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
+        let x = Tensor::cat(
+            x.into_iter()
+                .map(|pt| {
+                    Tensor::from_floats(pt).unsqueeze::<3>()
+                })
+                .collect(),
+            0,
+        );
+        let (mu, log_var) = self.encoder.forward(x);
+        (mu.to_vec(), log_var.to_vec())
     }
 }
 
@@ -162,8 +170,8 @@ impl EncoderConfig {
 impl<B: Backend> Encoder<B> {
     pub fn forward(
         &self,
-        input: PointTensor<B>,
-    ) -> (LatentTensor<B>, LatentTensor<B>) {
+        input: Batches<B>,
+    ) -> (Tensor<B, 3>, Tensor<B, 3>) {
         let x = self.block.forward(input);
         let mu = self.fc_mu.forward(x.clone());
         let logvar = self.fc_logvar.forward(x.clone());
@@ -204,10 +212,7 @@ impl DecoderConfig {
 }
 
 impl<B: Backend> Decoder<B> {
-    pub fn forward(
-        &self,
-        input: PointTensor<B>,
-    ) -> LatentTensor<B> {
+    pub fn forward(&self, input: Batches<B>) -> Batches<B> {
         let x = self.block.forward(input);
         self.fc.forward(x)
     }
