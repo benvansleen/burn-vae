@@ -9,11 +9,13 @@ use burn::{
     nn::{loss::MSELoss, loss::Reduction, Linear, LinearConfig},
     tensor::{
         backend::{AutodiffBackend, Backend},
-        Distribution, ElementConversion, Tensor,
+        Distribution, Tensor,
     },
     train::{TrainOutput, TrainStep, ValidStep},
 };
-use dataset::{LatentTensor, Point, PointTensor, SpiralBatch};
+use dataset::{Point, ToPoints, SpiralBatch};
+
+type Batches<B> = Tensor<B, 3>;
 
 #[derive(Module, Debug)]
 pub struct VAE<B: Backend> {
@@ -59,7 +61,7 @@ impl VAEConfig {
 impl<B: Backend> VAE<B> {
     pub fn forward(
         &self,
-        x: PointTensor<B>,
+        x: Batches<B>,
         y: Tensor<B, 2>,
     ) -> VAEOutput<B> {
         let batchsize = x.dims()[0] as i32;
@@ -107,25 +109,14 @@ impl<B: Backend> VAE<B> {
 
         let latent = Tensor::cat(vec![latent, t], 2);
         let output = self.decoder.forward(latent);
-        let last_dim = output.dims()[2];
 
-        output
-            .into_data()
-            .value
-            .chunks(last_dim)
-            .map(|chunk| {
-                chunk.iter().map(|x| x.elem()).collect()
-            })
-            .map(|v: Vec<f32>| {
-                v.try_into().expect("expected 3D point")
-            })
-            .collect()
+        output.to_points()
     }
 
     pub fn encode(
         &self,
         x: Vec<Point>,
-    ) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
+    ) -> (Vec<Point>, Vec<Point>) {
         let x = Tensor::cat(
             x.into_iter()
                 .map(|pt| {
@@ -135,18 +126,8 @@ impl<B: Backend> VAE<B> {
             0,
         );
         let (mu, log_var) = self.encoder.forward(x);
-        let dim = mu.dims()[2];
-        let to_vec = |t: Tensor<B, 3>| {
-            t.into_data()
-                .value
-                .chunks(dim)
-                .map(|chunk| {
-                    chunk.iter().map(|x| x.elem()).collect()
-                })
-                .collect()
-        };
 
-        (to_vec(mu), to_vec(log_var))
+        (mu.to_points(), log_var.to_points())
     }
 }
 
@@ -190,8 +171,8 @@ impl EncoderConfig {
 impl<B: Backend> Encoder<B> {
     pub fn forward(
         &self,
-        input: PointTensor<B>,
-    ) -> (LatentTensor<B>, LatentTensor<B>) {
+        input: Batches<B>,
+    ) -> (Tensor<B, 3>, Tensor<B, 3>) {
         let x = self.block.forward(input);
         let mu = self.fc_mu.forward(x.clone());
         let logvar = self.fc_logvar.forward(x.clone());
@@ -232,10 +213,7 @@ impl DecoderConfig {
 }
 
 impl<B: Backend> Decoder<B> {
-    pub fn forward(
-        &self,
-        input: PointTensor<B>,
-    ) -> LatentTensor<B> {
+    pub fn forward(&self, input: Batches<B>) -> Batches<B> {
         let x = self.block.forward(input);
         self.fc.forward(x)
     }

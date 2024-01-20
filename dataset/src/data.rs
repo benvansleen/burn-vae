@@ -1,12 +1,9 @@
 use crate::{generate::SpiralItem, workers, Point};
 use burn::{
     data::{dataloader::batcher::Batcher, dataset::Dataset},
-    tensor::{backend::Backend, Tensor},
+    tensor::{backend::Backend, ElementConversion, Tensor},
 };
 use flume::Receiver;
-
-pub type PointTensor<B> = Tensor<B, 3>;
-pub type LatentTensor<B> = Tensor<B, 3>;
 
 #[derive(Debug, Clone)]
 pub struct SpiralDataset {
@@ -46,7 +43,7 @@ impl<B: Backend> SpiralBatcher<B> {
 
 #[derive(Debug, Clone)]
 pub struct SpiralBatch<B: Backend> {
-    pub points: PointTensor<B>,
+    pub points: Tensor<B, 3>,
     pub labels: Tensor<B, 2>,
 }
 
@@ -86,4 +83,22 @@ pub fn get_data(n: usize) -> (Vec<Point>, Vec<f32>) {
         .map(|i| dataset.get(i).unwrap())
         .map(|item| (item.point, item.label))
         .unzip()
+}
+
+pub trait ToPoints {
+    fn to_points(self) -> Vec<Point>;
+}
+
+impl<B: Backend, const D: usize> ToPoints for Tensor<B, D> {
+    fn to_points(self) -> Vec<Point> {
+        let chunk_size =
+            *self.dims().last().expect("at least 1 dim");
+        self.into_data()
+            .value
+            .chunks(chunk_size)
+            .map(|chunk| {
+                std::array::from_fn(|i| chunk[i].elem())
+            })
+            .collect()
+    }
 }
