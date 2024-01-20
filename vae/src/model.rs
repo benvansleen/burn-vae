@@ -13,7 +13,7 @@ use burn::{
     },
     train::{TrainOutput, TrainStep, ValidStep},
 };
-use dataset::{Point, ToPoints, SpiralBatch};
+use dataset::{Point, ToPoints, ToVec, SpiralBatch};
 
 type Batches<B> = Tensor<B, 3>;
 
@@ -116,7 +116,7 @@ impl<B: Backend> VAE<B> {
     pub fn encode(
         &self,
         x: Vec<Point>,
-    ) -> (Vec<Point>, Vec<Point>) {
+    ) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
         let x = Tensor::cat(
             x.into_iter()
                 .map(|pt| {
@@ -126,8 +126,7 @@ impl<B: Backend> VAE<B> {
             0,
         );
         let (mu, log_var) = self.encoder.forward(x);
-
-        (mu.to_points(), log_var.to_points())
+        (mu.to_vec(), log_var.to_vec())
     }
 }
 

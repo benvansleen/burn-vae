@@ -29,7 +29,7 @@ fn _burn_vae(_py: Python, m: &PyModule) -> PyResult<()> {
     }
 
     #[pyfn(m)]
-    fn encode(x: Vec<Point>) -> (Vec<Point>, Vec<Point>) {
+    fn encode(x: Vec<Point>) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
         MODEL
             .get()
             .expect("Call .init() to load model")

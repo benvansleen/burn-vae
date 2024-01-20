@@ -1,15 +1,6 @@
 use flume::Sender;
 use pyo3::{prelude::*, types::IntoPyDict};
-
-pub const INPUT_DIM: usize = 3;
-pub const LABEL_DIM: usize = 1;
-pub type Point = [f32; INPUT_DIM];
-
-#[derive(Debug, Clone)]
-pub struct SpiralItem {
-    pub point: Point,
-    pub label: f32,
-}
+use crate::point::{SpiralItem, Point};
 
 pub fn generate_data(n_samples: u32, tx: Sender<SpiralItem>) {
     Python::with_gil(|py| {
