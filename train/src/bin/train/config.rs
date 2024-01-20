@@ -1,21 +1,14 @@
-use train::{train, TrainingConfig};
-
-use burn::{
-    nn::LinearConfig,
-    optim::AdamWConfig,
-    tensor::{backend::AutodiffBackend, Device},
-};
+use burn::{nn::LinearConfig, optim::AdamWConfig};
 use dataset::{INPUT_DIM, LABEL_DIM};
+use once_cell::sync::OnceCell;
+use train::TrainingConfig;
 use vae::{DecoderConfig, EncoderConfig, MLPBlockConfig, ModelConfig};
 
 const LATENT_DIM: usize = 2;
+static CONFIG: OnceCell<TrainingConfig> = OnceCell::new();
 
-pub fn train_model<B: AutodiffBackend>(
-    artifact_dir: &str,
-    device: &Device<B>,
-) {
-    train::<B>(
-        artifact_dir,
+pub fn config() -> &'static TrainingConfig {
+    CONFIG.get_or_init(|| {
         TrainingConfig::new(
             ModelConfig::new(
                 EncoderConfig::new(
@@ -42,9 +35,8 @@ pub fn train_model<B: AutodiffBackend>(
         .with_num_epochs(1000)
         .with_batch_size(512)
         .with_num_workers(4)
-        .with_warmup_steps(500)
+        .with_warmup_steps(1000)
         .with_early_stop_patience(50)
-        .with_learning_rate(8e1),
-        device,
-    );
+        .with_learning_rate(3e1)
+    })
 }

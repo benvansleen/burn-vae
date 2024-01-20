@@ -3147,6 +3147,7 @@ version = "0.1.0"
 dependencies = [
  "burn",
  "dataset",
+ "once_cell",
  "plotly",
  "rand",
  "serde",

@@ -1,3 +1,4 @@
+pub mod metric;
 pub mod visualization;
 
 mod train;

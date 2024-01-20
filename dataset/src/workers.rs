@@ -7,7 +7,7 @@ static CHAN: OnceCell<(Sender<SpiralItem>, Receiver<SpiralItem>)> =
 static T: OnceCell<[std::thread::JoinHandle<()>; 2]> = OnceCell::new();
 
 pub fn init() -> Receiver<SpiralItem> {
-    let (tx, rx) = CHAN.get_or_init(|| bounded(10_000_000));
+    let (tx, rx) = CHAN.get_or_init(|| bounded(1_000_000));
     T.get_or_init(|| {
         std::array::from_fn(|_| {
             let tx = tx.clone();
