@@ -26,7 +26,11 @@ pub fn plot(traces: &[Trace]) {
         Layout::new().height(1000).width(1000).legend(
             Legend::default()
                 .background_color(color::NamedColor::White)
-                .font(Font::default().color(color::NamedColor::Black).size(24)),
+                .font(
+                    Font::default()
+                        .color(color::NamedColor::Black)
+                        .size(24),
+                ),
         ),
     );
     traces.iter().for_each(|t| {
@@ -53,15 +57,21 @@ fn trace(
     });
 
     let color_fn = |c| match name {
-        "generated" => {
-            color::Rgb::new((c * 10.) as u8, (c * 128.) as u8, (c * 255.) as u8)
-        }
+        "generated" => color::Rgb::new(
+            (c * 10.) as u8,
+            (c * 128.) as u8,
+            (c * 255.) as u8,
+        ),
         "true" => color::Rgb::new(
             (c * 200.) as u8,
             (c * 100.) as u8,
             (c * 100.) as u8,
         ),
-        _ => color::Rgb::new((c * 0.) as u8, (c * 0.) as u8, (c * 200.) as u8),
+        _ => color::Rgb::new(
+            (c * 0.) as u8,
+            (c * 0.) as u8,
+            (c * 200.) as u8,
+        ),
     };
 
     let c_max: f32 = color.iter().fold(0., |acc, &x| acc.max(x));

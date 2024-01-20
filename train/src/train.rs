@@ -53,7 +53,8 @@ pub fn train<B: AutodiffBackend>(
     B::seed(config.seed);
 
     let train_batcher = SpiralBatcher::<B>::new(device.clone());
-    let valid_batcher = SpiralBatcher::<B::InnerBackend>::new(device.clone());
+    let valid_batcher =
+        SpiralBatcher::<B::InnerBackend>::new(device.clone());
 
     let train_loader = DataLoaderBuilder::new(train_batcher)
         .batch_size(config.batch_size)
@@ -89,10 +90,17 @@ pub fn train<B: AutodiffBackend>(
         ))
         .devices(vec![device.clone()])
         .num_epochs(config.num_epochs)
-        .build(config.model.init::<B>(), config.optimizer.init(), scheduler);
+        .build(
+            config.model.init::<B>(),
+            config.optimizer.init(),
+            scheduler,
+        );
 
     let model = learner.fit(train_loader, valid_loader);
     model
-        .save_file(format!("{artifact_dir}/model"), &CompactRecorder::new())
+        .save_file(
+            format!("{artifact_dir}/model"),
+            &CompactRecorder::new(),
+        )
         .expect("Trained model should be saved successfully");
 }

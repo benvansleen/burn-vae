@@ -71,12 +71,18 @@ impl<B: Backend> VAE<B> {
         let z = Tensor::cat(vec![z, y], 2);
 
         let output = self.decoder.forward(z);
-        let recon_loss = MSELoss::new().forward(output, x, Reduction::Mean);
+        let recon_loss =
+            MSELoss::new().forward(output, x, Reduction::Mean);
 
         VAEOutput::new(recon_loss, kl_loss.mul_scalar(self.kl_weight))
     }
 
-    pub fn generate(&self, t: f32, n: usize, device: &B::Device) -> Vec<Point> {
+    pub fn generate(
+        &self,
+        t: f32,
+        n: usize,
+        device: &B::Device,
+    ) -> Vec<Point> {
         let latent = Tensor::random(
             [n, 1, self.latent_dim],
             Distribution::Normal(0., 1.),
@@ -141,7 +147,10 @@ impl EncoderConfig {
 }
 
 impl<B: Backend> Encoder<B> {
-    pub fn forward(&self, input: Batches<B>) -> (Tensor<B, 3>, Tensor<B, 3>) {
+    pub fn forward(
+        &self,
+        input: Batches<B>,
+    ) -> (Tensor<B, 3>, Tensor<B, 3>) {
         let x = self.block.forward(input);
         let mu = self.fc_mu.forward(x.clone());
         let logvar = self.fc_logvar.forward(x.clone());
@@ -188,10 +197,13 @@ impl<B: Backend> Decoder<B> {
     }
 }
 
-impl<B: AutodiffBackend> TrainStep<SpiralBatch<B>, VAEOutput<B>> for VAE<B> {
+impl<B: AutodiffBackend> TrainStep<SpiralBatch<B>, VAEOutput<B>>
+    for VAE<B>
+{
     fn step(&self, batch: SpiralBatch<B>) -> TrainOutput<VAEOutput<B>> {
         let prediction = self.forward(batch.points, batch.labels);
-        let loss = prediction.recon_loss.clone() + prediction.kl_loss.clone();
+        let loss =
+            prediction.recon_loss.clone() + prediction.kl_loss.clone();
 
         TrainOutput::new(self, loss.backward(), prediction)
     }
