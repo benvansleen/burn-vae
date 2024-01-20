@@ -1,4 +1,7 @@
-use crate::{point::{Point, SpiralItem}, workers};
+use crate::{
+    point::{Point, SpiralItem},
+    workers,
+};
 use burn::{
     data::{dataloader::batcher::Batcher, dataset::Dataset},
     tensor::{backend::Backend, Tensor},
