@@ -73,10 +73,14 @@ impl<B: Backend> Metric for ReconstructionLossMetric<B> {
         loss: &Self::Input,
         _metadata: &MetricMetadata,
     ) -> MetricEntry {
-        let loss =
-            f64::from_elem(loss.tensor.clone().mean().into_data().value[0]);
-        self.state
-            .update(loss, 1, FormatOptions::new(Self::NAME).precision(2))
+        let loss = f64::from_elem(
+            loss.tensor.clone().mean().into_data().value[0],
+        );
+        self.state.update(
+            loss,
+            1,
+            FormatOptions::new(Self::NAME).precision(2),
+        )
     }
 
     fn clear(&mut self) {
@@ -121,10 +125,14 @@ impl<B: Backend> Metric for KLLossMetric<B> {
         loss: &Self::Input,
         _metadata: &MetricMetadata,
     ) -> MetricEntry {
-        let loss =
-            f64::from_elem(loss.tensor.clone().mean().into_data().value[0]);
-        self.state
-            .update(loss, 1, FormatOptions::new(Self::NAME).precision(2))
+        let loss = f64::from_elem(
+            loss.tensor.clone().mean().into_data().value[0],
+        );
+        self.state.update(
+            loss,
+            1,
+            FormatOptions::new(Self::NAME).precision(2),
+        )
     }
 
     fn clear(&mut self) {
@@ -174,8 +182,11 @@ impl Metric for NvidiaUtilMetric {
         let util = String::from_utf8(util).unwrap();
         let util = util.trim().parse::<f64>().unwrap();
 
-        self.state
-            .update(util, 1, FormatOptions::new(Self::NAME).precision(2))
+        self.state.update(
+            util,
+            1,
+            FormatOptions::new(Self::NAME).precision(2),
+        )
     }
 
     fn clear(&mut self) {

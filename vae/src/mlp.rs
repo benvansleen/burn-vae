@@ -55,8 +55,10 @@ impl MLPBlockConfig {
         (0..self.n_layers - 1).fold(
             vec![LinearConfig::new(self.input_dim, self.hidden_dim)],
             |mut layers, _| {
-                layers
-                    .push(LinearConfig::new(self.hidden_dim, self.hidden_dim));
+                layers.push(LinearConfig::new(
+                    self.hidden_dim,
+                    self.hidden_dim,
+                ));
                 layers
             },
         )
@@ -69,8 +71,11 @@ impl MLPBlockConfig {
                 .into_iter()
                 .map(|config| config.init())
                 .collect(),
-            final_layer: LinearConfig::new(self.hidden_dim, self.output_dim)
-                .init(),
+            final_layer: LinearConfig::new(
+                self.hidden_dim,
+                self.output_dim,
+            )
+            .init(),
             dropout: DropoutConfig::new(self.dropout).init(),
             activation: GELU::new(),
             norm: LayerNormConfig::new(self.hidden_dim).init(),
@@ -89,11 +94,15 @@ impl MLPBlockConfig {
                 .zip(record.layers)
                 .map(|(config, layer)| config.init_with(layer))
                 .collect(),
-            final_layer: LinearConfig::new(self.hidden_dim, self.output_dim)
-                .init_with(record.final_layer),
+            final_layer: LinearConfig::new(
+                self.hidden_dim,
+                self.output_dim,
+            )
+            .init_with(record.final_layer),
             dropout: DropoutConfig::new(self.dropout).init(),
             activation: GELU::new(),
-            norm: LayerNormConfig::new(self.hidden_dim).init_with(record.norm),
+            norm: LayerNormConfig::new(self.hidden_dim)
+                .init_with(record.norm),
             final_norm: LayerNormConfig::new(self.output_dim)
                 .init_with(record.final_norm),
         }

@@ -65,8 +65,9 @@ impl<B: Backend> Batcher<SpiralItem, SpiralBatch<B>> for SpiralBatcher<B> {
                 (p.reshape([1, 1, p_dim]), l.reshape([1, l_dim]))
             });
 
-        let points = Tensor::cat(batch.clone().map(|(p, _)| p).collect(), 0)
-            .to_device(&self.device);
+        let points =
+            Tensor::cat(batch.clone().map(|(p, _)| p).collect(), 0)
+                .to_device(&self.device);
         let labels = Tensor::cat(batch.map(|(_, l)| l).collect(), 0)
             .to_device(&self.device);
 
