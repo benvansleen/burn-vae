@@ -1,7 +1,7 @@
-mod point;
-mod generate;
-mod workers;
 mod data;
+mod generate;
+mod point;
+mod workers;
 
-pub use point::*;
 pub use data::*;
+pub use point::*;

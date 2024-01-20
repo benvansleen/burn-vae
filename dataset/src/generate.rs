@@ -1,6 +1,6 @@
+use crate::point::{Point, SpiralItem};
 use flume::Sender;
 use pyo3::{prelude::*, types::IntoPyDict};
-use crate::point::{SpiralItem, Point};
 
 pub fn generate_data(n_samples: u32, tx: Sender<SpiralItem>) {
     Python::with_gil(|py| {

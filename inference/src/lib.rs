@@ -15,9 +15,7 @@ fn _burn_vae(_py: Python, m: &PyModule) -> PyResult<()> {
 
     #[pyfn(m)]
     fn init(dir: &str) {
-        MODEL.get_or_init(|| {
-            train::load_model::<Backend>(dir, &DEVICE)
-        });
+        MODEL.get_or_init(|| train::load_model::<Backend>(dir, &DEVICE));
     }
 
     #[pyfn(m)]
@@ -30,10 +28,7 @@ fn _burn_vae(_py: Python, m: &PyModule) -> PyResult<()> {
 
     #[pyfn(m)]
     fn encode(x: Vec<Point>) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
-        MODEL
-            .get()
-            .expect("Call .init() to load model")
-            .encode(x)
+        MODEL.get().expect("Call .init() to load model").encode(x)
     }
 
     Ok(())
