@@ -3,14 +3,14 @@ use burn::backend::{
     Autodiff, Wgpu,
 };
 
+mod config;
+use config::config;
 use dataset::get_data;
 use rand::Rng;
 use train::{
-    load_model,
+    load_model, train,
     visualization::{plot, Trace},
 };
-mod config;
-use config::train_model;
 
 type Backend = Wgpu<AutoGraphicsApi, f32, i32>;
 
@@ -19,7 +19,7 @@ fn main() {
     let artifacts_dir =
         &std::env::args().nth(1).unwrap_or("artifacts".to_string());
 
-    train_model::<Autodiff<Backend>>(artifacts_dir, &device);
+    train::<Autodiff<Backend>>(artifacts_dir, config(), &device);
     let model = load_model::<Backend>(artifacts_dir, &device);
 
     const N: usize = 5000;

@@ -1,3 +1,4 @@
+use crate::metric::NvidiaUtilMetric;
 use burn::{
     config::Config,
     data::dataloader::DataLoaderBuilder,
@@ -16,7 +17,7 @@ use burn::{
 };
 use dataset::{SpiralBatcher, SpiralDataset};
 use vae::{
-    metric::{KLLossMetric, NvidiaUtilMetric, ReconstructionLossMetric},
+    metric::{KLLossMetric, ReconstructionLossMetric},
     ModelConfig,
 };
 
@@ -42,7 +43,7 @@ pub struct TrainingConfig {
 
 pub fn train<B: AutodiffBackend>(
     artifact_dir: &str,
-    config: TrainingConfig,
+    config: &TrainingConfig,
     device: &B::Device,
 ) {
     std::fs::create_dir_all(artifact_dir).ok();
@@ -63,7 +64,7 @@ pub fn train<B: AutodiffBackend>(
     let valid_loader = DataLoaderBuilder::new(valid_batcher)
         .batch_size(config.batch_size)
         .num_workers(config.num_workers)
-        .build(SpiralDataset::new(10_000));
+        .build(SpiralDataset::new(1_000));
 
     let scheduler = NoamLrSchedulerConfig::new(config.learning_rate)
         .with_warmup_steps(config.warmup_steps)
@@ -79,6 +80,7 @@ pub fn train<B: AutodiffBackend>(
         .metric_valid_numeric(KLLossMetric::new())
         .metric_train_numeric(LearningRateMetric::new())
         .metric_train_numeric(NvidiaUtilMetric::new())
+        .metric_valid_numeric(NvidiaUtilMetric::new())
         .with_file_checkpointer(CompactRecorder::new())
         .early_stopping(MetricEarlyStoppingStrategy::new::<LossMetric<B>>(
             Aggregate::Mean,
