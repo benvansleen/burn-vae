@@ -2,8 +2,8 @@ use burn::{
     config::Config,
     module::Module,
     nn::{
-        Dropout, DropoutConfig, LayerNorm, LayerNormConfig,
-        Linear, LinearConfig, GELU,
+        Dropout, DropoutConfig, LayerNorm, LayerNormConfig, Linear,
+        LinearConfig, GELU,
     },
     tensor::{backend::Backend, Tensor},
 };
@@ -53,39 +53,28 @@ impl<B: Backend, const D: usize> MLPBlock<B, D> {
 impl MLPBlockConfig {
     fn build_layers(&self) -> Vec<LinearConfig> {
         (0..self.n_layers - 1).fold(
-            vec![LinearConfig::new(
-                self.input_dim,
-                self.hidden_dim,
-            )],
+            vec![LinearConfig::new(self.input_dim, self.hidden_dim)],
             |mut layers, _| {
-                layers.push(LinearConfig::new(
-                    self.hidden_dim,
-                    self.hidden_dim,
-                ));
+                layers
+                    .push(LinearConfig::new(self.hidden_dim, self.hidden_dim));
                 layers
             },
         )
     }
 
-    pub fn init<B: Backend, const D: usize>(
-        &self,
-    ) -> MLPBlock<B, D> {
+    pub fn init<B: Backend, const D: usize>(&self) -> MLPBlock<B, D> {
         MLPBlock {
             layers: self
                 .build_layers()
                 .into_iter()
                 .map(|config| config.init())
                 .collect(),
-            final_layer: LinearConfig::new(
-                self.hidden_dim,
-                self.output_dim,
-            )
-            .init(),
+            final_layer: LinearConfig::new(self.hidden_dim, self.output_dim)
+                .init(),
             dropout: DropoutConfig::new(self.dropout).init(),
             activation: GELU::new(),
             norm: LayerNormConfig::new(self.hidden_dim).init(),
-            final_norm: LayerNormConfig::new(self.output_dim)
-                .init(),
+            final_norm: LayerNormConfig::new(self.output_dim).init(),
         }
     }
 
@@ -100,15 +89,11 @@ impl MLPBlockConfig {
                 .zip(record.layers)
                 .map(|(config, layer)| config.init_with(layer))
                 .collect(),
-            final_layer: LinearConfig::new(
-                self.hidden_dim,
-                self.output_dim,
-            )
-            .init_with(record.final_layer),
+            final_layer: LinearConfig::new(self.hidden_dim, self.output_dim)
+                .init_with(record.final_layer),
             dropout: DropoutConfig::new(self.dropout).init(),
             activation: GELU::new(),
-            norm: LayerNormConfig::new(self.hidden_dim)
-                .init_with(record.norm),
+            norm: LayerNormConfig::new(self.hidden_dim).init_with(record.norm),
             final_norm: LayerNormConfig::new(self.output_dim)
                 .init_with(record.final_norm),
         }

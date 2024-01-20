@@ -12,12 +12,10 @@ impl KLLoss {
         mean: Tensor<B, D>,
         log_var: Tensor<B, D>,
     ) -> Tensor<B, 1> {
-        (log_var.clone().add_scalar(1.)
-            - mean.powf(2.)
-            - log_var.exp())
-        .sum_dim(1)
-        .mean()
-        .mul_scalar(-0.5)
+        (log_var.clone().add_scalar(1.) - mean.powf(2.) - log_var.exp())
+            .sum_dim(1)
+            .mean()
+            .mul_scalar(-0.5)
     }
 }
 

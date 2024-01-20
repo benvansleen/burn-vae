@@ -1,4 +1,7 @@
-use crate::{point::{Point, SpiralItem}, workers};
+use crate::{
+    point::{Point, SpiralItem},
+    workers,
+};
 use burn::{
     data::{dataloader::batcher::Batcher, dataset::Dataset},
     tensor::{backend::Backend, Tensor},
@@ -47,9 +50,7 @@ pub struct SpiralBatch<B: Backend> {
     pub labels: Tensor<B, 2>,
 }
 
-impl<B: Backend> Batcher<SpiralItem, SpiralBatch<B>>
-    for SpiralBatcher<B>
-{
+impl<B: Backend> Batcher<SpiralItem, SpiralBatch<B>> for SpiralBatcher<B> {
     fn batch(&self, items: Vec<SpiralItem>) -> SpiralBatch<B> {
         let batch = items
             .iter()
@@ -64,14 +65,10 @@ impl<B: Backend> Batcher<SpiralItem, SpiralBatch<B>>
                 (p.reshape([1, 1, p_dim]), l.reshape([1, l_dim]))
             });
 
-        let points = Tensor::cat(
-            batch.clone().map(|(p, _)| p).collect(),
-            0,
-        )
-        .to_device(&self.device);
-        let labels =
-            Tensor::cat(batch.map(|(_, l)| l).collect(), 0)
-                .to_device(&self.device);
+        let points = Tensor::cat(batch.clone().map(|(p, _)| p).collect(), 0)
+            .to_device(&self.device);
+        let labels = Tensor::cat(batch.map(|(_, l)| l).collect(), 0)
+            .to_device(&self.device);
 
         SpiralBatch { points, labels }
     }
