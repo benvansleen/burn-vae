@@ -1,4 +1,4 @@
-use crate::{generate::SpiralItem, workers};
+use crate::{generate::SpiralItem, workers, Point};
 use burn::{
     data::{dataloader::batcher::Batcher, dataset::Dataset},
     tensor::{backend::Backend, Tensor},
@@ -80,10 +80,10 @@ impl<B: Backend> Batcher<SpiralItem, SpiralBatch<B>>
     }
 }
 
-pub fn get_data(n: usize) -> (Vec<Vec<f32>>, Vec<f32>) {
+pub fn get_data(n: usize) -> (Vec<Point>, Vec<f32>) {
     let dataset = SpiralDataset::new(n);
     (0..n)
         .map(|i| dataset.get(i).unwrap())
-        .map(|item| (item.point.to_vec(), item.label))
+        .map(|item| (item.point, item.label))
         .unzip()
 }

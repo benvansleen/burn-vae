@@ -13,7 +13,7 @@ use burn::{
     },
     train::{TrainOutput, TrainStep, ValidStep},
 };
-use dataset::{LatentTensor, PointTensor, SpiralBatch};
+use dataset::{LatentTensor, Point, PointTensor, SpiralBatch};
 
 #[derive(Module, Debug)]
 pub struct VAE<B: Backend> {
@@ -94,7 +94,7 @@ impl<B: Backend> VAE<B> {
         t: f32,
         n: usize,
         device: &B::Device,
-    ) -> Vec<Vec<f32>> {
+    ) -> Vec<Point> {
         let latent = Tensor::random(
             [n, 1, self.latent_dim],
             Distribution::Normal(0., 1.),
@@ -109,16 +109,44 @@ impl<B: Backend> VAE<B> {
         let output = self.decoder.forward(latent);
         let last_dim = output.dims()[2];
 
-        let output: Vec<Vec<_>> = output
+        output
             .into_data()
             .value
             .chunks(last_dim)
             .map(|chunk| {
                 chunk.iter().map(|x| x.elem()).collect()
             })
-            .collect();
+            .map(|v: Vec<f32>| {
+                v.try_into().expect("expected 3D point")
+            })
+            .collect()
+    }
 
-        output
+    pub fn encode(
+        &self,
+        x: Vec<Point>,
+    ) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
+        let x = Tensor::cat(
+            x.into_iter()
+                .map(|pt| {
+                    Tensor::from_floats(pt).unsqueeze::<3>()
+                })
+                .collect(),
+            0,
+        );
+        let (mu, log_var) = self.encoder.forward(x);
+        let dim = mu.dims()[2];
+        let to_vec = |t: Tensor<B, 3>| {
+            t.into_data()
+                .value
+                .chunks(dim)
+                .map(|chunk| {
+                    chunk.iter().map(|x| x.elem()).collect()
+                })
+                .collect()
+        };
+
+        (to_vec(mu), to_vec(log_var))
     }
 }
 
