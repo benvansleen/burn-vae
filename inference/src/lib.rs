@@ -1,6 +1,6 @@
 use burn::backend::{
     wgpu::{AutoGraphicsApi, WgpuDevice},
-    Wgpu,
+    Fusion, Wgpu,
 };
 use dataset::Point;
 use once_cell::sync::OnceCell;
@@ -9,7 +9,7 @@ use vae::Model;
 
 #[pymodule]
 fn _burn_vae(_py: Python, m: &PyModule) -> PyResult<()> {
-    type Backend = Wgpu<AutoGraphicsApi, f32, i32>;
+    type Backend = Fusion<Wgpu<AutoGraphicsApi, f32, i32>>;
     static MODEL: OnceCell<Model<Backend>> = OnceCell::new();
     const DEVICE: WgpuDevice = WgpuDevice::BestAvailable;
 

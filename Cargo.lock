@@ -487,6 +487,7 @@ checksum = "8676fa583cfa91db6f2ed26d8e42197fd378c15ed1e8a62c07286cb88f1971ec"
 dependencies = [
  "burn-common",
  "burn-compute",
+ "burn-fusion",
  "burn-tensor",
  "bytemuck",
  "derive-new",

@@ -33,7 +33,7 @@ pub fn config() -> &'static TrainingConfig {
             AdamWConfig::new(),
         )
         .with_num_epochs(1000)
-        .with_batch_size(512)
+        .with_batch_size(256)
         .with_num_workers(4)
         .with_warmup_steps(1000)
         .with_early_stop_patience(50)

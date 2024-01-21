@@ -1,6 +1,6 @@
 use burn::backend::{
     wgpu::{AutoGraphicsApi, WgpuDevice},
-    Autodiff, Wgpu,
+    Autodiff, Fusion, Wgpu,
 };
 
 mod config;
@@ -12,15 +12,15 @@ use train::{
     visualization::{plot, Trace},
 };
 
-type Backend = Wgpu<AutoGraphicsApi, f32, i32>;
+type Backend = Fusion<Wgpu<AutoGraphicsApi, f32, i32>>;
+const DEVICE: WgpuDevice = WgpuDevice::BestAvailable;
 
 fn main() {
-    let device = WgpuDevice::BestAvailable;
     let artifacts_dir =
         &std::env::args().nth(1).unwrap_or("artifacts".to_string());
 
-    train::<Autodiff<Backend>>(artifacts_dir, config(), &device);
-    let model = load_model::<Backend>(artifacts_dir, &device);
+    train::<Autodiff<Backend>>(artifacts_dir, config(), &DEVICE);
+    let model = load_model::<Backend>(artifacts_dir, &DEVICE);
 
     const N: usize = 5000;
     const MAX_SIZE: usize = 128;
@@ -39,7 +39,7 @@ fn main() {
     let mut gen_colors = Vec::new();
     (0..N).step_by(MAX_SIZE).for_each(|_| {
         let t = rng.gen_range(min_t..max_t);
-        let gen = model.generate(t, MAX_SIZE, &device);
+        let gen = model.generate(t, MAX_SIZE, &DEVICE);
         let n = gen.len();
         generated.extend(gen);
         gen_colors.extend(std::iter::repeat(t).take(n));
