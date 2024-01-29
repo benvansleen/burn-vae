@@ -2,21 +2,21 @@ mod config;
 
 #[cfg(not(target_family = "wasm"))]
 fn main() {
-use burn::backend::{
-    wgpu::{AutoGraphicsApi, WgpuDevice},
-    Autodiff, Fusion, Wgpu,
-};
+    use burn::backend::{
+        wgpu::{AutoGraphicsApi, WgpuDevice},
+        Autodiff, Fusion, Wgpu,
+    };
 
-use config::config;
-use dataset::get_data;
-use rand::Rng;
-use train::{
-    load_model,
-    visualization::{plot, Trace},
-};
-use train::train;
-type Backend = Fusion<Wgpu<AutoGraphicsApi, f32, i32>>;
-const DEVICE: WgpuDevice = WgpuDevice::BestAvailable;
+    use config::config;
+    use dataset::get_data;
+    use rand::Rng;
+    use train::train;
+    use train::{
+        load_model,
+        visualization::{plot, Trace},
+    };
+    type Backend = Fusion<Wgpu<AutoGraphicsApi, f32, i32>>;
+    const DEVICE: WgpuDevice = WgpuDevice::BestAvailable;
 
     let artifacts_dir =
         &std::env::args().nth(1).unwrap_or("artifacts".to_string());
@@ -50,7 +50,8 @@ const DEVICE: WgpuDevice = WgpuDevice::BestAvailable;
     plot(&[
         Trace::new(generated, gen_colors, "generated"),
         Trace::new(true_pts, true_colors, "true"),
-    ]).show();
+    ])
+    .show();
 }
 
 #[cfg(target_family = "wasm")]

@@ -1,14 +1,14 @@
 use crate::error_template::{AppError, ErrorTemplate};
+use burn::{
+    backend::{ndarray::NdArrayDevice, NdArray},
+    config::Config,
+    module::Module,
+    record::{BinBytesRecorder, FullPrecisionSettings, Recorder},
+};
 use leptos::*;
 use leptos_dom::log;
 use leptos_meta::*;
 use leptos_router::*;
-use burn::{
-    backend::{NdArray, ndarray::NdArrayDevice},
-    config::Config,
-    module::Module,
-    record::{Recorder, BinBytesRecorder, FullPrecisionSettings},
-};
 type Backend = NdArray<f32>;
 use inference::ModelConfig;
 use train::visualization::{plot, Trace};
@@ -40,22 +40,27 @@ pub fn App() -> impl IntoView {
     }
 }
 
-static MODEL_BYTES: &[u8] = include_bytes!("../../model_artifacts/model.bin");
+static MODEL_BYTES: &[u8] =
+    include_bytes!("../../model_artifacts/model.bin");
 
 const ASSETS: &str = "target/site";
 const N: usize = 5000;
 
 fn asset(path: &str) -> String {
-    std::path::Path::new(ASSETS).join(path).to_str().unwrap().to_string()
+    std::path::Path::new(ASSETS)
+        .join(path)
+        .to_str()
+        .unwrap()
+        .to_string()
 }
 
 /// Renders the home page of your application.
 #[component]
 fn HomePage() -> impl IntoView {
     let config = ModelConfig::load(
-        std::path::Path::new("model_artifacts").join("config.json")
+        std::path::Path::new("model_artifacts").join("config.json"),
     )
-        .expect("Model not found");
+    .expect("Model not found");
 
     let count_start = 1;
     let files = ["a.txt", "b.txt", "c.txt"];
@@ -65,9 +70,7 @@ fn HomePage() -> impl IntoView {
             .into_iter()
             .enumerate()
             .map(|(index, f)| {
-                let content = std::fs::read_to_string(
-                    asset(f)
-                )
+                let content = std::fs::read_to_string(asset(f))
                     .expect("that file exists");
                 view! {
                     <Tab index>
@@ -106,7 +109,7 @@ fn HomePage() -> impl IntoView {
 //     plotly::bindings::new_plot(id, &plot).await;
 // }
 
-    use std::sync::Arc;
+use std::sync::Arc;
 async fn render_plot(
     id: &str,
     generated: Vec<inference::Point>,
@@ -123,9 +126,10 @@ async fn render_plot(
     log!("finished plotting");
 }
 
-
-async fn generate(model: inference::Model<Backend>) -> (Vec<inference::Point>, Vec<f32>) {
-use rand::Rng;
+async fn generate(
+    model: inference::Model<Backend>,
+) -> (Vec<inference::Point>, Vec<f32>) {
+    use rand::Rng;
     log!("generating");
     let device = NdArrayDevice::default();
 
@@ -156,27 +160,43 @@ fn Plot(
     true_pts: Vec<inference::Point>,
     true_color: Vec<f32>,
 ) -> impl IntoView {
-
     let record = BinBytesRecorder::<FullPrecisionSettings>::default()
         .load(MODEL_BYTES.to_vec())
         .expect("to load model from bytes");
     let model = config.model.init_with::<Backend>(record);
 
-    let generated = create_local_resource(|| (), move |_| generate(model.clone()));
+    let generated =
+        create_local_resource(|| (), move |_| generate(model.clone()));
 
     let id = "plot-div";
     // let true_dist = Arc::new(true_dist);
-    let (true_pts, true_color) = (Arc::new(true_pts), Arc::new(true_color));
+    let (true_pts, true_color) =
+        (Arc::new(true_pts), Arc::new(true_color));
     // let x = Arc::new(x);
     // let y = Arc::new(y);
     // let z = Arc::new(z);
 
     // let _ = create_local_resource(|| (), move |_| plot(id, x.to_vec(), y.to_vec(), z.to_vec()));
 
-    let _ = create_local_resource(|| (), move |_| match generated.get() {
-        Some((g, c)) => render_plot(id, g, c, true_pts.to_vec(), true_color.to_vec()),
-        None => render_plot(id, vec![], vec![], true_pts.to_vec(), true_color.to_vec()),
-    });
+    let _ = create_local_resource(
+        || (),
+        move |_| match generated.get() {
+            Some((g, c)) => render_plot(
+                id,
+                g,
+                c,
+                true_pts.to_vec(),
+                true_color.to_vec(),
+            ),
+            None => render_plot(
+                id,
+                vec![],
+                vec![],
+                true_pts.to_vec(),
+                true_color.to_vec(),
+            ),
+        },
+    );
 
     view! {
         <div id={id}></div>

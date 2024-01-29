@@ -1,13 +1,10 @@
-use burn::{
-    config::Config,
-    module::Module,
-    optim::AdamWConfig,
-};
+use burn::{config::Config, module::Module, optim::AdamWConfig};
 #[cfg(not(target_family = "wasm"))]
 use burn::{
     data::dataloader::DataLoaderBuilder,
     lr_scheduler::noam::NoamLrSchedulerConfig,
     record::CompactRecorder,
+    tensor::backend::AutodiffBackend,
     train::{
         metric::{
             store::{Aggregate, Direction, Split},
@@ -15,7 +12,6 @@ use burn::{
         },
         LearnerBuilder, MetricEarlyStoppingStrategy, StoppingCondition,
     },
-    tensor::backend::AutodiffBackend,
 };
 use dataset::{SpiralBatcher, SpiralDataset};
 use vae::ModelConfig;
@@ -24,7 +20,6 @@ use vae::ModelConfig;
 use crate::metric::NvidiaUtilMetric;
 #[cfg(not(target_family = "wasm"))]
 use vae::metric::{KLLossMetric, ReconstructionLossMetric};
-
 
 #[derive(Config)]
 pub struct TrainingConfig {
@@ -119,5 +114,4 @@ pub fn train<B: AutodiffBackend>(
     model
         .save_file(format!("{artifact_dir}/model.bin"), &bin)
         .expect("Model should be saved successfully");
-
 }

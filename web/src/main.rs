@@ -1,8 +1,8 @@
 use axum::{routing::post, Router};
-use web::app::*;
-use web::fileserv::file_and_error_handler;
 use leptos::*;
 use leptos_axum::{generate_route_list, LeptosRoutes};
+use web::app::*;
+use web::fileserv::file_and_error_handler;
 
 #[tokio::main]
 async fn main() {
