@@ -228,7 +228,6 @@ impl<B: Backend> Decoder<B> {
     }
 }
 
-// #[cfg(not(feature = "non-wasm"))]
 #[cfg(not(target_family = "wasm"))]
 impl<B: AutodiffBackend> TrainStep<SpiralBatch<B>, VAEOutput<B>>
     for VAE<B>
@@ -242,7 +241,6 @@ impl<B: AutodiffBackend> TrainStep<SpiralBatch<B>, VAEOutput<B>>
     }
 }
 
-// #[cfg(feature = "non-wasm")]
 #[cfg(not(target_family = "wasm"))]
 impl<B: Backend> ValidStep<SpiralBatch<B>, VAEOutput<B>> for VAE<B> {
     fn step(&self, batch: SpiralBatch<B>) -> VAEOutput<B> {
