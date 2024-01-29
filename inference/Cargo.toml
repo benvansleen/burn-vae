@@ -4,13 +4,21 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 dataset = { workspace = true }
 train = { workspace = true }
 vae = { workspace = true }
-pyo3 = { workspace = true }
+pyo3 = { workspace = true, optional = true }
 once_cell = { workspace = true }
-burn = { workspace = true }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+burn = { workspace = true, features = ["fusion", "wgpu"]}
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+burn = { workspace = true, features = ["ndarray"] }
+
+[features]
+python = ["pyo3"]
 
