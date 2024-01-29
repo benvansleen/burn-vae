@@ -4,7 +4,6 @@ use burn::{
     data::dataloader::DataLoaderBuilder,
     lr_scheduler::noam::NoamLrSchedulerConfig,
     record::CompactRecorder,
-    tensor::backend::AutodiffBackend,
     train::{
         metric::{
             store::{Aggregate, Direction, Split},
@@ -12,6 +11,7 @@ use burn::{
         },
         LearnerBuilder, MetricEarlyStoppingStrategy, StoppingCondition,
     },
+    tensor::backend::AutodiffBackend,
 };
 use dataset::{SpiralBatcher, SpiralDataset};
 use vae::ModelConfig;

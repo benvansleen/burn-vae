@@ -49,6 +49,7 @@ impl<B: Backend, const D: usize> ToVec for Tensor<B, D> {
 #[cfg(target_family = "wasm")]
 pub trait ToPoints {
     fn to_points(self) -> impl Future<Output = Vec<Point>>;
+
 }
 
 #[cfg(target_family = "wasm")]

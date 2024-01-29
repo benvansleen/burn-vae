@@ -9,6 +9,7 @@ use leptos::*;
 use leptos_dom::log;
 use leptos_meta::*;
 use leptos_router::*;
+
 type Backend = NdArray<f32>;
 use inference::ModelConfig;
 use train::visualization::{plot, Trace};
@@ -130,6 +131,7 @@ async fn generate(
     model: inference::Model<Backend>,
 ) -> (Vec<inference::Point>, Vec<f32>) {
     use rand::Rng;
+  
     log!("generating");
     let device = NdArrayDevice::default();
 
@@ -172,6 +174,7 @@ fn Plot(
     // let true_dist = Arc::new(true_dist);
     let (true_pts, true_color) =
         (Arc::new(true_pts), Arc::new(true_color));
+
     // let x = Arc::new(x);
     // let y = Arc::new(y);
     // let z = Arc::new(z);
