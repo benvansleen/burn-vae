@@ -1,8 +1,8 @@
 #[cfg(not(target_family = "wasm"))]
 pub mod metric;
-pub mod visualization;
 #[cfg(not(target_family = "wasm"))]
 pub mod metric;
+pub mod visualization;
 
 mod train;
 pub use train::TrainingConfig;

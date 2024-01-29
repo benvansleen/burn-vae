@@ -131,7 +131,7 @@ async fn generate(
     model: inference::Model<Backend>,
 ) -> (Vec<inference::Point>, Vec<f32>) {
     use rand::Rng;
-  
+
     log!("generating");
     let device = NdArrayDevice::default();
 
