@@ -11,9 +11,11 @@ use burn::{
         backend::{AutodiffBackend, Backend},
         Distribution, Tensor,
     },
-    train::{TrainOutput, TrainStep, ValidStep},
 };
 use dataset::{Point, SpiralBatch, ToPoints, ToVec};
+
+#[cfg(not(target_family = "wasm"))]
+use burn::train::{TrainOutput, TrainStep, ValidStep};
 
 type Batches<B> = Tensor<B, 3>;
 
@@ -77,12 +79,12 @@ impl<B: Backend> VAE<B> {
         VAEOutput::new(recon_loss, kl_loss.mul_scalar(self.kl_weight))
     }
 
-    pub fn generate(
+    fn _generate(
         &self,
         t: f32,
         n: usize,
         device: &B::Device,
-    ) -> Vec<Point> {
+    ) -> Batches<B> {
         let latent = Tensor::random(
             [n, 1, self.latent_dim],
             Distribution::Normal(0., 1.),
@@ -94,20 +96,49 @@ impl<B: Backend> VAE<B> {
             .repeat(0, n);
 
         let latent = Tensor::cat(vec![latent, t], 2);
-        let output = self.decoder.forward(latent);
-
-        output.to_points()
+        self.decoder.forward(latent)
     }
 
-    pub fn encode(&self, x: Vec<Point>) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
+    #[cfg(not(target_family = "wasm"))]
+    pub fn generate(
+        &self,
+        t: f32,
+        n: usize,
+        device: &B::Device,
+    ) -> Vec<Point> {
+        self._generate(t, n, device).to_points()
+    }
+
+    #[cfg(target_family = "wasm")]
+    pub async fn generate(
+        &self,
+        t: f32,
+        n: usize,
+        device: &B::Device,
+    ) -> Vec<Point> {
+        self._generate(t, n, device).to_points().await
+    }
+
+    fn _encode(&self, x: Vec<Point>) -> (Batches<B>, Batches<B>) {
         let x = Tensor::cat(
             x.into_iter()
                 .map(|pt| Tensor::from_floats(pt).unsqueeze::<3>())
                 .collect(),
             0,
         );
-        let (mu, log_var) = self.encoder.forward(x);
+        self.encoder.forward(x)
+    }
+
+    #[cfg(not(target_family = "wasm"))]
+    pub fn encode(&self, x: Vec<Point>) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
+        let (mu, log_var) = self._encode(x);
         (mu.to_vec(), log_var.to_vec())
+    }
+
+    #[cfg(target_family = "wasm")]
+    pub async fn encode(&self, x: Vec<Point>) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
+        let (mu, log_var) = self._encode(x);
+        (mu.to_vec().await, log_var.to_vec().await)
     }
 }
 
@@ -150,7 +181,7 @@ impl<B: Backend> Encoder<B> {
     pub fn forward(
         &self,
         input: Batches<B>,
-    ) -> (Tensor<B, 3>, Tensor<B, 3>) {
+    ) -> (Batches<B>, Batches<B>) {
         let x = self.block.forward(input);
         let mu = self.fc_mu.forward(x.clone());
         let logvar = self.fc_logvar.forward(x.clone());
@@ -197,6 +228,8 @@ impl<B: Backend> Decoder<B> {
     }
 }
 
+// #[cfg(not(feature = "non-wasm"))]
+#[cfg(not(target_family = "wasm"))]
 impl<B: AutodiffBackend> TrainStep<SpiralBatch<B>, VAEOutput<B>>
     for VAE<B>
 {
@@ -209,6 +242,8 @@ impl<B: AutodiffBackend> TrainStep<SpiralBatch<B>, VAEOutput<B>>
     }
 }
 
+// #[cfg(feature = "non-wasm")]
+#[cfg(not(target_family = "wasm"))]
 impl<B: Backend> ValidStep<SpiralBatch<B>, VAEOutput<B>> for VAE<B> {
     fn step(&self, batch: SpiralBatch<B>) -> VAEOutput<B> {
         self.forward(batch.points, batch.labels)

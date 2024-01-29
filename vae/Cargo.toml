@@ -8,3 +8,5 @@ dataset = { workspace = true }
 burn = { workspace = true }
 serde = { workspace = true }
 
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+burn = { workspace = true, features = ["train"]}
