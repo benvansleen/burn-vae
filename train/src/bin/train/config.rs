@@ -12,7 +12,7 @@ pub fn config() -> &'static TrainingConfig {
         TrainingConfig::new(
             ModelConfig::new(
                 EncoderConfig::new(
-                    MLPBlockConfig::new(3, 128, INPUT_DIM, 32)
+                    MLPBlockConfig::new(4, 128, INPUT_DIM, 32)
                         .with_dropout(0.1),
                     LinearConfig::new(32, LATENT_DIM).with_bias(true),
                     LinearConfig::new(32, LATENT_DIM).with_bias(true),
@@ -37,6 +37,6 @@ pub fn config() -> &'static TrainingConfig {
         .with_num_workers(4)
         .with_warmup_steps(1000)
         .with_early_stop_patience(50)
-        .with_learning_rate(3e1)
+        .with_learning_rate(8e1)
     })
 }
