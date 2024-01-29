@@ -6,8 +6,11 @@ edition = "2021"
 [dependencies]
 dataset = { workspace = true }
 vae = { workspace = true }
-burn = { workspace = true }
+burn = { workspace = true, default_features = true }
 serde = { workspace = true }
 once_cell = { workspace = true }
 rand = "0.8.5"
 plotly = "0.8.4"
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+burn = { workspace = true, features = ["fusion", "train", "wgpu"]}
