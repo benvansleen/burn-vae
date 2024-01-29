@@ -1,12 +1,13 @@
-use crate::metric::NvidiaUtilMetric;
 use burn::{
     config::Config,
-    data::dataloader::DataLoaderBuilder,
-    lr_scheduler::noam::NoamLrSchedulerConfig,
     module::Module,
     optim::AdamWConfig,
+};
+#[cfg(not(target_family = "wasm"))]
+use burn::{
+    data::dataloader::DataLoaderBuilder,
+    lr_scheduler::noam::NoamLrSchedulerConfig,
     record::CompactRecorder,
-    tensor::backend::AutodiffBackend,
     train::{
         metric::{
             store::{Aggregate, Direction, Split},
@@ -14,12 +15,16 @@ use burn::{
         },
         LearnerBuilder, MetricEarlyStoppingStrategy, StoppingCondition,
     },
+    tensor::backend::AutodiffBackend,
 };
 use dataset::{SpiralBatcher, SpiralDataset};
-use vae::{
-    metric::{KLLossMetric, ReconstructionLossMetric},
-    ModelConfig,
-};
+use vae::ModelConfig;
+
+#[cfg(not(target_family = "wasm"))]
+use crate::metric::NvidiaUtilMetric;
+#[cfg(not(target_family = "wasm"))]
+use vae::metric::{KLLossMetric, ReconstructionLossMetric};
+
 
 #[derive(Config)]
 pub struct TrainingConfig {
@@ -41,6 +46,7 @@ pub struct TrainingConfig {
     pub early_stop_patience: usize,
 }
 
+#[cfg(not(target_family = "wasm"))]
 pub fn train<B: AutodiffBackend>(
     artifact_dir: &str,
     config: &TrainingConfig,
@@ -99,10 +105,19 @@ pub fn train<B: AutodiffBackend>(
         );
 
     let model = learner.fit(train_loader, valid_loader);
+
     model
+        .clone()
         .save_file(
             format!("{artifact_dir}/model"),
             &CompactRecorder::new(),
         )
         .expect("Trained model should be saved successfully");
+
+    use burn::record::{BinFileRecorder, FullPrecisionSettings};
+    let bin = BinFileRecorder::<FullPrecisionSettings>::new();
+    model
+        .save_file(format!("{artifact_dir}/model.bin"), &bin)
+        .expect("Model should be saved successfully");
+
 }

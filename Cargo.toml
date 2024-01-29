@@ -1,10 +1,12 @@
 [workspace]
 resolver = "2"
+default-members = ["train"]
 members = [
   "dataset",
   "vae",
   "train",
   "inference",
+  "web",
 ]
 
 [profile.dev]
@@ -15,13 +17,22 @@ debug = true
 opt-level = 3
 debug = false
 overflow-checks = false
-# lto = "thin"
-# codegen-units = 1
+lto = "fat"
+codegen-units = 1
+
+[profile.wasm-release]
+inherits = "release"
+opt-level = 'z'
+lto = true
+codegen-units = 1
+panic = "abort"
 
 [workspace.dependencies]
 train = { path = "train" }
 vae = { path = "vae" }
 dataset = { path = "dataset" }
+inference = { path = "inference" }
+burn = { version = "0.11.1", default-features = false }
 serde = "1"
 
 [workspace.dependencies.pyo3]
@@ -33,8 +44,3 @@ features = ["auto-initialize", "macros"]
 version = "1.19.0"
 default-features = false
 features = ["std"]
-
-[workspace.dependencies.burn]
-version = "0.11.1"
-default-features = false
-features = ["fusion", "train", "tui", "wgpu"]

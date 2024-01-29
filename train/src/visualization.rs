@@ -20,7 +20,7 @@ impl Trace {
     }
 }
 
-pub fn plot(traces: &[Trace]) {
+pub fn plot(traces: &[Trace]) -> Plot {
     let mut plt = Plot::new();
     plt.set_layout(
         Layout::new().height(1000).width(1000).legend(
@@ -37,7 +37,8 @@ pub fn plot(traces: &[Trace]) {
         let t = trace(&t.pts, &t.colors, t.name);
         plt.add_trace(t);
     });
-    plt.show();
+
+    plt
 }
 
 fn trace(

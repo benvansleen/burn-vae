@@ -2,8 +2,11 @@ use crate::{
     point::{Point, SpiralItem},
     workers,
 };
+#[cfg(not(target_family = "wasm"))]
+use burn::data::{
+    dataloader::batcher::Batcher, dataset::Dataset,
+};
 use burn::{
-    data::{dataloader::batcher::Batcher, dataset::Dataset},
     tensor::{backend::Backend, Tensor},
 };
 use flume::Receiver;
@@ -23,6 +26,7 @@ impl SpiralDataset {
     }
 }
 
+#[cfg(not(target_family = "wasm"))]
 impl Dataset<SpiralItem> for SpiralDataset {
     fn get(&self, _idx: usize) -> Option<SpiralItem> {
         self.ch.recv().ok()
@@ -50,6 +54,7 @@ pub struct SpiralBatch<B: Backend> {
     pub labels: Tensor<B, 2>,
 }
 
+#[cfg(not(target_family = "wasm"))]
 impl<B: Backend> Batcher<SpiralItem, SpiralBatch<B>> for SpiralBatcher<B> {
     fn batch(&self, items: Vec<SpiralItem>) -> SpiralBatch<B> {
         let batch = items
@@ -75,6 +80,7 @@ impl<B: Backend> Batcher<SpiralItem, SpiralBatch<B>> for SpiralBatcher<B> {
     }
 }
 
+#[cfg(not(target_family = "wasm"))]
 pub fn get_data(n: usize) -> (Vec<Point>, Vec<f32>) {
     let dataset = SpiralDataset::new(n);
     (0..n)

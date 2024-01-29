@@ -4,6 +4,11 @@ NOTEBOOK_DIR := notebooks
 PYTHON_DIR := python/burn_vae
 MODEL := $(BUILD_DIR)/model.mpk.gz
 
+.PHONY: web
+web: $(MODEL)
+	@echo "Building wasm"
+	@cargo leptos serve --release
+
 .PHONY: notebook
 notebook: build
 	@echo "Starting notebook..."

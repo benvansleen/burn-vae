@@ -1,9 +1,10 @@
 use burn::{
     tensor::{backend::Backend, ElementConversion, Tensor},
-    train::metric::{
+};
+#[cfg(not(target_family = "wasm"))]
+use burn::train::metric::{
         state::{FormatOptions, NumericMetricState},
         Adaptor, LossInput, Metric, MetricEntry, MetricMetadata, Numeric,
-    },
 };
 
 pub struct VAEOutput<B: Backend> {
@@ -20,26 +21,25 @@ impl<B: Backend> VAEOutput<B> {
     }
 }
 
+#[cfg(not(target_family = "wasm"))]
 impl<B: Backend> Adaptor<LossInput<B>> for VAEOutput<B> {
     fn adapt(&self) -> LossInput<B> {
         LossInput::new(self.kl_loss.clone() + self.recon_loss.clone())
     }
 }
 
+#[cfg(not(target_family = "wasm"))]
 impl<B: Backend> Adaptor<ReconstructionLossInput<B>> for VAEOutput<B> {
     fn adapt(&self) -> ReconstructionLossInput<B> {
         ReconstructionLossInput::new(self.recon_loss.clone())
     }
 }
 
+#[cfg(not(target_family = "wasm"))]
 impl<B: Backend> Adaptor<KLLossInput<B>> for VAEOutput<B> {
     fn adapt(&self) -> KLLossInput<B> {
         KLLossInput::new(self.kl_loss.clone())
     }
-}
-
-impl<B: Backend> Adaptor<()> for VAEOutput<B> {
-    fn adapt(&self) {}
 }
 
 pub struct ReconstructionLossInput<B: Backend> {
@@ -54,6 +54,7 @@ impl<B: Backend> ReconstructionLossInput<B> {
 
 #[derive(Default)]
 pub struct ReconstructionLossMetric<B: Backend> {
+    #[cfg(not(target_family = "wasm"))]
     state: NumericMetricState,
     _b: B,
 }
@@ -64,6 +65,7 @@ impl<B: Backend> ReconstructionLossMetric<B> {
     }
 }
 
+#[cfg(not(target_family = "wasm"))]
 impl<B: Backend> Metric for ReconstructionLossMetric<B> {
     type Input = ReconstructionLossInput<B>;
     const NAME: &'static str = "Reconstruction Loss";
@@ -88,6 +90,7 @@ impl<B: Backend> Metric for ReconstructionLossMetric<B> {
     }
 }
 
+#[cfg(not(target_family = "wasm"))]
 impl<B: Backend> Numeric for ReconstructionLossMetric<B> {
     fn value(&self) -> f64 {
         self.state.value()
@@ -106,6 +109,7 @@ impl<B: Backend> KLLossInput<B> {
 
 #[derive(Default)]
 pub struct KLLossMetric<B: Backend> {
+    #[cfg(not(target_family = "wasm"))]
     state: NumericMetricState,
     _b: B,
 }
@@ -116,6 +120,7 @@ impl<B: Backend> KLLossMetric<B> {
     }
 }
 
+#[cfg(not(target_family = "wasm"))]
 impl<B: Backend> Metric for KLLossMetric<B> {
     type Input = KLLossInput<B>;
     const NAME: &'static str = "KL Loss";
@@ -140,6 +145,7 @@ impl<B: Backend> Metric for KLLossMetric<B> {
     }
 }
 
+#[cfg(not(target_family = "wasm"))]
 impl<B: Backend> Numeric for KLLossMetric<B> {
     fn value(&self) -> f64 {
         self.state.value()

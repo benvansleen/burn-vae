@@ -1,8 +1,10 @@
 use crate::point::{Point, SpiralItem};
 use flume::Sender;
-use pyo3::{prelude::*, types::IntoPyDict};
 
 pub fn generate_data(n_samples: u32, tx: Sender<SpiralItem>) {
+    #[cfg(not(target_family = "wasm"))] {
+    use pyo3::{prelude::*, types::IntoPyDict};
+
     Python::with_gil(|py| {
         let ds = py.import("sklearn.datasets").unwrap();
         let swiss = ds.getattr("make_swiss_roll").unwrap();
@@ -24,4 +26,5 @@ pub fn generate_data(n_samples: u32, tx: Sender<SpiralItem>) {
             });
         }
     })
+        }
 }
