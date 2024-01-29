@@ -136,7 +136,10 @@ impl<B: Backend> VAE<B> {
     }
 
     #[cfg(target_family = "wasm")]
-    pub async fn encode(&self, x: Vec<Point>) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
+    pub async fn encode(
+        &self,
+        x: Vec<Point>,
+    ) -> (Vec<Vec<f32>>, Vec<Vec<f32>>) {
         let (mu, log_var) = self._encode(x);
         (mu.to_vec().await, log_var.to_vec().await)
     }
@@ -178,10 +181,7 @@ impl EncoderConfig {
 }
 
 impl<B: Backend> Encoder<B> {
-    pub fn forward(
-        &self,
-        input: Batches<B>,
-    ) -> (Batches<B>, Batches<B>) {
+    pub fn forward(&self, input: Batches<B>) -> (Batches<B>, Batches<B>) {
         let x = self.block.forward(input);
         let mu = self.fc_mu.forward(x.clone());
         let logvar = self.fc_logvar.forward(x.clone());

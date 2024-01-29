@@ -2,7 +2,6 @@ use burn::tensor::{backend::Backend, ElementConversion, Tensor};
 #[cfg(target_family = "wasm")]
 use std::future::Future;
 
-
 pub const INPUT_DIM: usize = 3;
 pub const LABEL_DIM: usize = 1;
 pub type Point = [f32; INPUT_DIM];
@@ -49,17 +48,17 @@ impl<B: Backend, const D: usize> ToVec for Tensor<B, D> {
 
 #[cfg(target_family = "wasm")]
 pub trait ToPoints {
-    fn to_points(self) -> impl Future<Output=Vec<Point>>;
+    fn to_points(self) -> impl Future<Output = Vec<Point>>;
 }
 
 #[cfg(target_family = "wasm")]
 pub trait ToVec {
-    fn to_vec(self) -> impl Future<Output=Vec<Vec<f32>>>;
+    fn to_vec(self) -> impl Future<Output = Vec<Vec<f32>>>;
 }
 
 #[cfg(target_family = "wasm")]
 impl<B: Backend, const D: usize> ToPoints for Tensor<B, D> {
-    fn to_points(self) -> impl Future<Output=Vec<Point>> {
+    fn to_points(self) -> impl Future<Output = Vec<Point>> {
         let chunk_size = *self.dims().last().expect("at least 1 dim");
         async move {
             self.into_data()
@@ -74,7 +73,7 @@ impl<B: Backend, const D: usize> ToPoints for Tensor<B, D> {
 
 #[cfg(target_family = "wasm")]
 impl<B: Backend, const D: usize> ToVec for Tensor<B, D> {
-    fn to_vec(self) -> impl Future<Output=Vec<Vec<f32>>> {
+    fn to_vec(self) -> impl Future<Output = Vec<Vec<f32>>> {
         let chunk_size = *self.dims().last().expect("at least 1 dim");
         async move {
             self.into_data()

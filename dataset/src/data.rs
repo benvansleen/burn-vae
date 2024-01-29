@@ -3,12 +3,8 @@ use crate::{
     workers,
 };
 #[cfg(not(target_family = "wasm"))]
-use burn::data::{
-    dataloader::batcher::Batcher, dataset::Dataset,
-};
-use burn::{
-    tensor::{backend::Backend, Tensor},
-};
+use burn::data::{dataloader::batcher::Batcher, dataset::Dataset};
+use burn::tensor::{backend::Backend, Tensor};
 use flume::Receiver;
 
 #[derive(Debug, Clone)]

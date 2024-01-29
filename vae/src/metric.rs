@@ -1,10 +1,8 @@
-use burn::{
-    tensor::{backend::Backend, ElementConversion, Tensor},
-};
+use burn::tensor::{backend::Backend, ElementConversion, Tensor};
 #[cfg(not(target_family = "wasm"))]
 use burn::train::metric::{
-        state::{FormatOptions, NumericMetricState},
-        Adaptor, LossInput, Metric, MetricEntry, MetricMetadata, Numeric,
+    state::{FormatOptions, NumericMetricState},
+    Adaptor, LossInput, Metric, MetricEntry, MetricMetadata, Numeric,
 };
 
 pub struct VAEOutput<B: Backend> {

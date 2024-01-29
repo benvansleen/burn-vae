@@ -1,12 +1,15 @@
-pub use train::TrainingConfig as ModelConfig;
 pub use train::load_model;
+pub use train::TrainingConfig as ModelConfig;
 
 pub use dataset::Point;
 use once_cell::sync::OnceCell;
 pub use vae::Model;
 
 #[cfg(not(target_family = "wasm"))]
-use burn::backend::{Fusion, Wgpu, wgpu::{AutoGraphicsApi, WgpuDevice}};
+use burn::backend::{
+    wgpu::{AutoGraphicsApi, WgpuDevice},
+    Fusion, Wgpu,
+};
 
 #[cfg(not(target_family = "wasm"))]
 type Backend = Fusion<Wgpu<AutoGraphicsApi, f32, i32>>;
@@ -28,14 +31,12 @@ pub fn generate(t: f32, n: usize) -> Vec<Point> {
         .generate(t, n, &DEVICE)
 }
 
-
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
 
 #[cfg(feature = "python")]
 #[pymodule]
 fn _burn_vae(_py: Python, m: &PyModule) -> PyResult<()> {
-
     #[pyfn(m)]
     fn _init(dir: &str) {
         init(dir);
