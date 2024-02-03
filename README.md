@@ -11,3 +11,10 @@ The VAE is conditioned on radius from center of spiral. As a result, the trained
 
 https://github.com/benvansleen/burn-vae/assets/78059325/065c9e8c-9f1d-4bb9-acc6-f9dbe2af32e2
 
+
+
+
+The VAE can be compiled to WASM and run in the browser. The `web` crate deploys the VAE via Leptos.
+
+https://github.com/benvansleen/burn-vae/assets/78059325/e215d272-9ba4-4c82-9176-af5cb237c67b
+
