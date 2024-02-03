@@ -8,7 +8,7 @@ use leptos_router::*;
 use rand::Rng;
 use std::path::Path;
 use std::sync::Arc;
-use thaw::{Button, Slider};
+use thaw::{Button, Slider, Spinner};
 use train::visualization::{plot, Trace};
 
 type Points = Vec<inference::Point>;
@@ -83,6 +83,7 @@ fn Plot(
     let (pt_buf, set_pt_buf) = create_signal(Points::new());
     let (col_buf, set_col_buf) = create_signal(Vec::<f32>::new());
     let r = create_rw_signal(6.);
+    let (rendered, set_rendered) = create_signal(false);
 
     inference::load_bytes(model_config, MODEL_BYTES.to_vec());
     let generated =
@@ -108,6 +109,7 @@ fn Plot(
                 col_buf(),
                 true_pts.to_vec(),
                 true_color.to_vec(),
+                set_rendered,
             )
         },
     );
@@ -118,6 +120,10 @@ fn Plot(
     };
     view! {
         <div id=id></div>
+        <Show when=move || rendered() fallback=|| view! { <Spinner/> }>
+            <span></span>
+        </Show>
+
         <Slider value=r max=20. step=0.5/>
         <Button on:click=clear>"Clear generated points"</Button>
     }
@@ -130,6 +136,7 @@ async fn render_plot(
     gen_colors: Vec<f32>,
     true_pts: Points,
     true_colors: Vec<f32>,
+    set_rendered: WriteSignal<bool>,
 ) {
     log!("plotting");
     let p = plot(&[
@@ -138,4 +145,6 @@ async fn render_plot(
     ]);
     crate::bindings::update(id, &p).await;
     log!("finished plotting");
+
+    set_rendered(true);
 }
