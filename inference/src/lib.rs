@@ -3,7 +3,9 @@ pub use train::TrainingConfig as ModelConfig;
 
 pub use dataset::Point;
 use once_cell::sync::OnceCell;
-pub use vae::Model;
+use vae::Model as M;
+
+use burn::tensor::Device;
 
 #[cfg(not(target_family = "wasm"))]
 use burn::backend::{
@@ -13,22 +15,60 @@ use burn::backend::{
 
 #[cfg(not(target_family = "wasm"))]
 type Backend = Fusion<Wgpu<AutoGraphicsApi, f32, i32>>;
-#[cfg(not(target_family = "wasm"))]
-const DEVICE: WgpuDevice = WgpuDevice::BestAvailable;
-#[cfg(not(target_family = "wasm"))]
-static MODEL: OnceCell<Model<Backend>> = OnceCell::new();
+#[cfg(target_family = "wasm")]
+type Backend = NdArray<f32>;
 
-#[cfg(not(target_family = "wasm"))]
+pub type Model = M<Backend>;
+
+static DEVICE: OnceCell<Device<Backend>> = OnceCell::new();
+static MODEL: OnceCell<Model> = OnceCell::new();
+
+#[cfg(target_family = "wasm")]
+use burn::backend::{ndarray::NdArrayDevice, NdArray};
+
 pub fn init(dir: &str) {
-    MODEL.get_or_init(|| train::load_model::<Backend>(dir, &DEVICE));
+    #[cfg(not(target_family = "wasm"))]
+    let device = WgpuDevice::BestAvailable;
+    #[cfg(target_family = "wasm")]
+    let device = NdArrayDevice::default();
+
+    let device = DEVICE.get_or_init(|| device);
+    MODEL.set(train::load_model::<Backend>(dir, device))
+        .expect("Failed to initialize model");
+}
+
+use burn::config::Config;
+use burn::record::{BinBytesRecorder, FullPrecisionSettings, Recorder};
+use std::path::Path;
+pub fn load_bytes(config: ModelConfig, weights: Vec<u8>) {
+    #[cfg(not(target_family = "wasm"))]
+    let device = WgpuDevice::BestAvailable;
+    #[cfg(target_family = "wasm")]
+    let device = DEVICE.get_or_init(NdArrayDevice::default);
+
+    let record = BinBytesRecorder::<FullPrecisionSettings>::default()
+        .load(weights)
+        .expect("Failed to load weights");
+    MODEL.get_or_init(|| config.model.init_with::<Backend>(record));
 }
 
 #[cfg(not(target_family = "wasm"))]
 pub fn generate(t: f32, n: usize) -> Vec<Point> {
+    let device = DEVICE.get().expect("Call .init() to load model");
     MODEL
         .get()
         .expect("Call .init() to load model")
-        .generate(t, n, &DEVICE)
+        .generate(t, n, device)
+}
+
+#[cfg(target_family = "wasm")]
+pub async fn generate(t: f32, n: usize) -> Vec<Point> {
+    let device = DEVICE.get().expect("Call .init() to load model");
+    MODEL
+        .get()
+        .expect("Call .init() to load model")
+        .generate(t, n, device)
+        .await
 }
 
 #[cfg(feature = "python")]

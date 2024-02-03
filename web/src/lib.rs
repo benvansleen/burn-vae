@@ -4,6 +4,7 @@ pub mod error_template;
 pub mod fileserv;
 
 cfg_if! { if #[cfg(feature = "hydrate")] {
+    pub mod bindings;
     use leptos::*;
     use wasm_bindgen::prelude::wasm_bindgen;
 

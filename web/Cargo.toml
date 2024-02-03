@@ -30,10 +30,11 @@ inference = { workspace = true }
 dataset = { workspace = true }
 train = { workspace = true }
 burn = { workspace = true , features = ["ndarray"]}
+thaw = { version = "0.1.9", default-features = false, optional = true }
 rand = "0.8.5"
 
 [features]
-hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate"]#, "inference"]
+hydrate = ["leptos/hydrate", "leptos_meta/hydrate", "leptos_router/hydrate", "thaw/hydrate"]
 ssr = [
     "dep:axum",
     "dep:tokio",
@@ -44,7 +45,7 @@ ssr = [
     "leptos_meta/ssr",
     "leptos_router/ssr",
     "dep:tracing",
-    # "inference/default",
+    "thaw/ssr",
 ]
 
 # Defines a size-optimized profile for the WASM bundle in release mode

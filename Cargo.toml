@@ -17,12 +17,13 @@ debug = true
 opt-level = 3
 debug = false
 overflow-checks = false
-lto = "fat"
-codegen-units = 1
+# lto = "fat"
+# codegen-units = 1
 
 [profile.wasm-release]
 inherits = "release"
-opt-level = 'z'
+# opt-level = 'z'
+opt-level = 3
 lto = true
 codegen-units = 1
 panic = "abort"

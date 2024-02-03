@@ -84,3 +84,8 @@ pub fn get_data(n: usize) -> (Vec<Point>, Vec<f32>) {
         .map(|item| (item.point, item.label))
         .unzip()
 }
+
+#[cfg(target_family = "wasm")]
+pub fn get_data(n: usize) -> (Vec<Point>, Vec<f32>) {
+    unimplemented!()
+}

@@ -22,17 +22,7 @@ impl Trace {
 
 pub fn plot(traces: &[Trace]) -> Plot {
     let mut plt = Plot::new();
-    plt.set_layout(
-        Layout::new().height(1000).width(1000).legend(
-            Legend::default()
-                .background_color(color::NamedColor::White)
-                .font(
-                    Font::default()
-                        .color(color::NamedColor::Black)
-                        .size(24),
-                ),
-        ),
-    );
+    plt.set_layout(Layout::new().height(1000).width(1000));
     traces.iter().for_each(|t| {
         let t = trace(&t.pts, &t.colors, t.name);
         plt.add_trace(t);
