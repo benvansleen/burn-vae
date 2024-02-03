@@ -1,5 +1,5 @@
-use wasm_bindgen::prelude::*;
 use plotly::Plot;
+use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen(module = "/public/plot.js")]
 extern "C" {

@@ -1,11 +1,12 @@
 pub use train::load_model;
 pub use train::TrainingConfig as ModelConfig;
-
 pub use dataset::Point;
 use once_cell::sync::OnceCell;
 use vae::Model as M;
-
-use burn::tensor::Device;
+use burn::{
+    tensor::Device,
+    record::{BinBytesRecorder, FullPrecisionSettings, Recorder},
+};
 
 #[cfg(not(target_family = "wasm"))]
 use burn::backend::{
@@ -33,18 +34,16 @@ pub fn init(dir: &str) {
     let device = NdArrayDevice::default();
 
     let device = DEVICE.get_or_init(|| device);
-    MODEL.set(train::load_model::<Backend>(dir, device))
+    MODEL
+        .set(train::load_model::<Backend>(dir, device))
         .expect("Failed to initialize model");
 }
 
-use burn::config::Config;
-use burn::record::{BinBytesRecorder, FullPrecisionSettings, Recorder};
-use std::path::Path;
 pub fn load_bytes(config: ModelConfig, weights: Vec<u8>) {
     #[cfg(not(target_family = "wasm"))]
-    let device = WgpuDevice::BestAvailable;
+    DEVICE.get_or_init(|| WgpuDevice::BestAvailable);
     #[cfg(target_family = "wasm")]
-    let device = DEVICE.get_or_init(NdArrayDevice::default);
+    DEVICE.get_or_init(NdArrayDevice::default);
 
     let record = BinBytesRecorder::<FullPrecisionSettings>::default()
         .load(weights)

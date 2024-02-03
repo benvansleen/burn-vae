@@ -16,7 +16,7 @@ notebook: build
 
 build: $(MODEL) python_deps
 	@echo "Building python package"
-	@poetry run maturin develop --release -m $(LIB_DIR)/Cargo.toml
+	@poetry run maturin develop --release -m $(LIB_DIR)/Cargo.toml --features python
 
 $(MODEL):
 	@echo "Training model"

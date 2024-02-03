@@ -86,6 +86,6 @@ pub fn get_data(n: usize) -> (Vec<Point>, Vec<f32>) {
 }
 
 #[cfg(target_family = "wasm")]
-pub fn get_data(n: usize) -> (Vec<Point>, Vec<f32>) {
+pub fn get_data(_n: usize) -> (Vec<Point>, Vec<f32>) {
     unimplemented!()
 }

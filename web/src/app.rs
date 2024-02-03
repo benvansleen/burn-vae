@@ -1,16 +1,15 @@
 use crate::error_template::{AppError, ErrorTemplate};
+use burn::config::Config;
+use inference::ModelConfig;
 use leptos::*;
 use leptos_dom::log;
 use leptos_meta::*;
 use leptos_router::*;
-use thaw::{Button, Slider};
+use rand::Rng;
 use std::path::Path;
 use std::sync::Arc;
-
-use burn::config::Config;
-use inference::ModelConfig;
+use thaw::{Button, Slider};
 use train::visualization::{plot, Trace};
-    use rand::Rng;
 
 type Points = Vec<inference::Point>;
 
@@ -47,23 +46,21 @@ fn Main() -> impl IntoView {
     let (true_pts, true_color) = dataset::get_data(2000);
     let model_config = ModelConfig::load(
         Path::new("model_artifacts").join("config.json"),
-    ).expect("Model not found");
+    )
+    .expect("Model not found");
 
     view! {
         <Plot model_config true_pts true_color/>
     }
 }
 
-async fn generate(
-    r: f32,
-) -> (Points, Vec<f32>) {
+async fn generate(r: f32) -> (Points, Vec<f32>) {
     log!("generating");
 
     const MAX_SIZE: usize = 2;
     let mut generated = Vec::new();
     let mut gen_colors = Vec::new();
 
-    let (min_t, max_t) = (6., 20.);
     for _ in (0..50).step_by(MAX_SIZE) {
         let r = r + rand::thread_rng().gen_range(-0.25..0.25);
         #[cfg(target_family = "wasm")]
@@ -89,21 +86,17 @@ fn Plot(
     let (col_buf, set_col_buf) = create_signal(Vec::<f32>::new());
     let r = create_rw_signal(6.);
 
-    inference::load_bytes(
-        model_config,
-        MODEL_BYTES.to_vec(),
-    );
+    inference::load_bytes(model_config, MODEL_BYTES.to_vec());
     let generated =
-        create_local_resource(|| (), move |_| {
-            generate(r() as f32)
-        });
+        create_local_resource(|| (), move |_| generate(r() as f32));
 
     let id = "plot-div";
     let (true_pts, true_color) =
         (Arc::new(true_pts), Arc::new(true_color));
     #[cfg(target_family = "wasm")]
     let _ = create_local_resource(
-        || (), move |_| {
+        || (),
+        move |_| {
             let (g, c) = generated.get().unwrap_or((vec![], vec![]));
             set_pt_buf.update(|pt| {
                 pt.extend(g);
@@ -137,9 +130,9 @@ fn Plot(
 #[cfg(target_family = "wasm")]
 async fn render_plot(
     id: &str,
-    generated: Vec<inference::Point>,
+    generated: Points,
     gen_colors: Vec<f32>,
-    true_pts: Vec<inference::Point>,
+    true_pts: Points,
     true_colors: Vec<f32>,
 ) {
     log!("plotting");
