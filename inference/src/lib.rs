@@ -1,12 +1,12 @@
-pub use train::load_model;
-pub use train::TrainingConfig as ModelConfig;
+use burn::{
+    record::{BinBytesRecorder, FullPrecisionSettings, Recorder},
+    tensor::Device,
+};
 pub use dataset::Point;
 use once_cell::sync::OnceCell;
+pub use train::load_model;
+pub use train::TrainingConfig as ModelConfig;
 use vae::Model as M;
-use burn::{
-    tensor::Device,
-    record::{BinBytesRecorder, FullPrecisionSettings, Recorder},
-};
 
 #[cfg(not(target_family = "wasm"))]
 use burn::backend::{

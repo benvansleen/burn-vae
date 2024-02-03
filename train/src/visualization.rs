@@ -1,6 +1,7 @@
 use dataset::Point;
 use plotly::{
-    color, common::{Marker, Mode},
+    color,
+    common::{Marker, Mode},
     Layout, Plot, Scatter3D,
 };
 
