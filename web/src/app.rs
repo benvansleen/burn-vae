@@ -49,9 +49,7 @@ fn Main() -> impl IntoView {
     )
     .expect("Model not found");
 
-    view! {
-        <Plot model_config true_pts true_color/>
-    }
+    view! { <Plot model_config true_pts true_color/> }
 }
 
 async fn generate(r: f32) -> (Points, Vec<f32>) {
@@ -119,11 +117,9 @@ fn Plot(
         set_col_buf.update(|col| col.clear());
     };
     view! {
-        <div id={id} />
+        <div id=id></div>
         <Slider value=r max=20. step=0.5/>
-        <Button on:click=clear>
-        "Clear generated points"
-        </Button>
+        <Button on:click=clear>"Clear generated points"</Button>
     }
 }
 
