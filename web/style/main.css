@@ -16,7 +16,7 @@ main {
 leptos-island {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-content: center;
     align-items: center;
     gap: 20px;
@@ -25,8 +25,16 @@ leptos-island {
 }
 
 #plot-div {
-    width: 80vw;
-    height: 50vh;
+    width: 40vw;
+    height: 60vh;
+    margin: 0 0 20vh 0;
+}
+@media (max-width: 1000px) {
+    #plot-div {
+        width: 100vw;
+        height: 60vh;
+        margin: 0 0 20vh 0;
+    }
 }
 
 .thaw-slider {
@@ -54,7 +62,7 @@ div.user-select-none.svg-container {
 }
 
 div#scene {
-    aspect-ratio: 20/12 !important;
+    aspect-ratio: 1/1 !important;
     width: 100% !important;
     height: auto !important;
     position: absolute;
