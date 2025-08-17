@@ -81,6 +81,7 @@
       in
       rec {
         packages = rec {
+          default = train;
           train = craneLib.buildPackage (
             individualCrateArgs
             // {
