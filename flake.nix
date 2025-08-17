@@ -7,8 +7,7 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     rust-overlay = {
-      ## pin rust compiler to March 2024
-      url = "github:oxalica/rust-overlay/a30facb";
+      url = "github:oxalica/rust-overlay";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         flake-utils.follows = "flake-utils";
