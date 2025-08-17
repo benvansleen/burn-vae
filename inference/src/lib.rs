@@ -4,14 +4,14 @@ use burn::{
 };
 pub use dataset::Point;
 use once_cell::sync::OnceCell;
-pub use train::load_model;
 pub use train::TrainingConfig as ModelConfig;
+pub use train::load_model;
 use vae::Model as M;
 
 #[cfg(not(target_family = "wasm"))]
 use burn::backend::{
-    wgpu::{AutoGraphicsApi, WgpuDevice},
     Fusion, Wgpu,
+    wgpu::{AutoGraphicsApi, WgpuDevice},
 };
 
 #[cfg(not(target_family = "wasm"))]
@@ -25,7 +25,7 @@ static DEVICE: OnceCell<Device<Backend>> = OnceCell::new();
 static MODEL: OnceCell<Model> = OnceCell::new();
 
 #[cfg(target_family = "wasm")]
-use burn::backend::{ndarray::NdArrayDevice, NdArray};
+use burn::backend::{NdArray, ndarray::NdArrayDevice};
 
 pub fn init(dir: &str) {
     #[cfg(not(target_family = "wasm"))]

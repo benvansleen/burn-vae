@@ -2,10 +2,10 @@ use burn::{
     config::Config,
     module::Module,
     nn::{
-        Dropout, DropoutConfig, LayerNorm, LayerNormConfig, Linear,
-        LinearConfig, GELU,
+        Dropout, DropoutConfig, GELU, LayerNorm, LayerNormConfig, Linear,
+        LinearConfig,
     },
-    tensor::{backend::Backend, Tensor},
+    tensor::{Tensor, backend::Backend},
 };
 
 #[derive(Module, Debug)]

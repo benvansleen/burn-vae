@@ -2,7 +2,7 @@ use burn::{
     config::Config,
     module::Module,
     record::Recorder,
-    tensor::{backend::Backend, Device},
+    tensor::{Device, backend::Backend},
 };
 use vae::Model;
 

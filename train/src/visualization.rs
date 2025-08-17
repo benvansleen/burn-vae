@@ -1,8 +1,7 @@
 use dataset::Point;
 use plotly::{
-    color,
+    Layout, Plot, Scatter3D, color,
     common::{Marker, Mode},
-    Layout, Plot, Scatter3D,
 };
 
 type Points = Vec<Point>;

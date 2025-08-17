@@ -16,6 +16,11 @@
     };
 
     crane.url = "github:ipetkov/crane";
+
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -26,6 +31,7 @@
       pre-commit-hooks,
       rust-overlay,
       crane,
+      treefmt-nix,
     }:
     with flake-utils.lib;
     eachSystem allSystems (
@@ -37,11 +43,18 @@
         };
         inherit (pkgs) lib;
 
-        rustToolchain = pkgs.rust-bin.selectLatestNightlyWith(
-          toolchain: toolchain.default.override {
-          extensions = [ "rust-src" "rust-analyzer" ];
-          targets = [ "wasm32-unknown-unknown" ];
-        });
+        treefmtEval = pkgs: treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
+
+        rustToolchain = pkgs.rust-bin.selectLatestNightlyWith (
+          toolchain:
+          toolchain.default.override {
+            extensions = [
+              "rust-src"
+              "rust-analyzer"
+            ];
+            targets = [ "wasm32-unknown-unknown" ];
+          }
+        );
 
         craneLib = (crane.mkLib pkgs).overrideToolchain rustToolchain;
         src = craneLib.cleanCargoSource ./.;
@@ -58,83 +71,87 @@
         cargoArtifacts = craneLib.buildDepsOnly commonArgs;
         individualCrateArgs = commonArgs // {
           inherit cargoArtifacts;
-          inherit (craneLib.crateNameFromCargoToml {inherit src;}) version;
+          inherit (craneLib.crateNameFromCargoToml { inherit src; }) version;
         };
+
+        cargo-src = [
+          ./Cargo.toml
+          ./Cargo.lock
+          (craneLib.fileset.commonCargoSources ./.)
+        ];
       in
-        rec {
-          packages = rec {
-            train = craneLib.buildPackage (
-              individualCrateArgs // {
-                pname = "train";
-                cargoExtraArgs = "-p train";
-                src = lib.fileset.toSource {
-                  root = ./.;
-                  fileset = lib.fileset.unions [
-                    ./Cargo.toml
-                    ./Cargo.lock
-                    (craneLib.fileset.commonCargoSources ./dataset)
-                    (craneLib.fileset.commonCargoSources ./vae)
-                    (craneLib.fileset.commonCargoSources ./train)
-                  ];
-                };
-                }
+      rec {
+        packages = rec {
+          train = craneLib.buildPackage (
+            individualCrateArgs
+            // {
+              pname = "train";
+              cargoExtraArgs = "-p train";
+              src = lib.fileset.toSource {
+                root = ./.;
+                fileset = lib.fileset.unions cargo-src;
+              };
+            }
           );
 
-            web = craneLib.buildPackage (
-              individualCrateArgs
-              // rec {
-                pname = "web";
-                src = lib.fileset.toSource {
-                  root = ./.;
-                  fileset = lib.fileset.unions [
-                    ./Cargo.toml
-                    ./Cargo.lock
-                    (craneLib.fileset.commonCargoSources ./web)
-                    (craneLib.fileset.commonCargoSources ./dataset)
-                    (craneLib.fileset.commonCargoSources ./vae)
-                    (craneLib.fileset.commonCargoSources ./train)
-                    (craneLib.fileset.commonCargoSources ./inference)
+          web = craneLib.buildPackage (
+            individualCrateArgs
+            // rec {
+              pname = "web";
+              src = lib.fileset.toSource {
+                root = ./.;
+                fileset = lib.fileset.unions (
+                  cargo-src
+                  ++ [
                     ./web/public
                     ./web/style
                     ./model_artifacts/model.bin
-                  ];
-                };
+                  ]
+                );
+              };
 
-                buildPhaseCargoCommand = "cargo leptos build --release";
-                doCheck = false;
-                doNotPostBuildInstallCargoBinaries = true;
-                installPhaseCommand = ''
-                  mkdir -p $out/bin
-                  cp target/release/${pname} $out/bin/
-                  cp -r target/site $out/bin/
-                  wrapProgram $out/bin/${pname} \
-                    --set LEPTOS_SITE_ROOT $out/bin/site
-                '';
+              buildPhaseCargoCommand = "cargo leptos build --release";
+              doCheck = false;
+              doNotPostBuildInstallCargoBinaries = true;
+              installPhaseCommand = ''
+                mkdir -p $out/bin
+                cp target/release/${pname} $out/bin/
+                cp -r target/site $out/bin/
+                wrapProgram $out/bin/${pname} \
+                  --set LEPTOS_SITE_ROOT $out/bin/site
+              '';
 
-                buildInputs = with pkgs; [
-                  cargo-leptos
-                  binaryen
-                ];
-                nativeBuildInputs = with pkgs; [
-                  makeWrapper
-                ];
-            });
-          };
+              buildInputs = with pkgs; [
+                cargo-leptos
+                binaryen
+              ];
+              nativeBuildInputs = with pkgs; [
+                makeWrapper
+              ];
+            }
+          );
+        };
 
-          devShells = {
-            default =
-              with pkgs;
+        devShells = {
+          default =
+            with pkgs;
             mkShell {
               buildInputs = [
                 self.checks.${system}.pre-commit-check.enabledPackages
-                self.packages.${system}.train.buildInputs
-                self.packages.${system}.train.nativeBuildInputs
-                self.packages.${system}.train.propagatedBuildInputs
-
-                self.packages.${system}.web.buildInputs
-                self.packages.${system}.web.nativeBuildInputs
-                self.packages.${system}.web.propagatedBuildInputs
-              ];
+              ]
+              ++ (
+                with lib;
+                pipe self.packages.${system} [
+                  (mapAttrsToList (
+                    _name: value: [
+                      value.buildInputs
+                      value.nativeBuildInputs
+                      value.propagatedBuildInputs
+                    ]
+                  ))
+                  flatten
+                ]
+              );
 
               shellHook = lib.concatStringsSep "\n\n" [
                 self.checks.${system}.pre-commit-check.shellHook
@@ -145,13 +162,20 @@
                 ''
               ];
             };
-          };
+        };
 
-          checks = {
-            pre-commit-check = pre-commit-hooks.lib.${pkgs.system}.run {
-              src = ./.;
-              hooks = { };
+        formatter = (treefmtEval pkgs).config.build.wrapper;
+        checks = {
+          pre-commit-check = pre-commit-hooks.lib.${pkgs.system}.run {
+            src = ./.;
+            hooks = {
+              treefmt = {
+                enable = true;
+                packageOverrides.treefmt = self.outputs.formatter.${pkgs.system};
+              };
             };
           };
-        });
+        };
+      }
+    );
 }

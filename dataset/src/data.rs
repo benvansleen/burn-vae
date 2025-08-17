@@ -4,7 +4,7 @@ use crate::{
 };
 #[cfg(not(target_family = "wasm"))]
 use burn::data::{dataloader::batcher::Batcher, dataset::Dataset};
-use burn::tensor::{backend::Backend, Tensor};
+use burn::tensor::{Tensor, backend::Backend};
 use flume::Receiver;
 
 #[derive(Debug, Clone)]

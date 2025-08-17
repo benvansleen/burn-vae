@@ -6,11 +6,11 @@ use burn::{
     record::CompactRecorder,
     tensor::backend::AutodiffBackend,
     train::{
-        metric::{
-            store::{Aggregate, Direction, Split},
-            LearningRateMetric, LossMetric,
-        },
         LearnerBuilder, MetricEarlyStoppingStrategy, StoppingCondition,
+        metric::{
+            LearningRateMetric, LossMetric,
+            store::{Aggregate, Direction, Split},
+        },
     },
 };
 use dataset::{SpiralBatcher, SpiralDataset};

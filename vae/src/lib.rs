@@ -6,5 +6,5 @@ pub use mlp::MLPBlockConfig;
 
 mod model;
 pub use model::{
-    DecoderConfig, EncoderConfig, VAEConfig as ModelConfig, VAE as Model,
+    DecoderConfig, EncoderConfig, VAE as Model, VAEConfig as ModelConfig,
 };

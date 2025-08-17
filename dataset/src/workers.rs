@@ -1,5 +1,5 @@
 use crate::{generate::generate_data, point::SpiralItem};
-use flume::{bounded, Receiver, Sender};
+use flume::{Receiver, Sender, bounded};
 use once_cell::sync::OnceCell;
 
 static CHAN: OnceCell<(Sender<SpiralItem>, Receiver<SpiralItem>)> =

@@ -1,4 +1,4 @@
-use burn::tensor::{backend::Backend, ElementConversion, Tensor};
+use burn::tensor::{ElementConversion, Tensor, backend::Backend};
 #[cfg(target_family = "wasm")]
 use std::future::Future;
 

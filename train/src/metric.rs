@@ -1,6 +1,6 @@
 use burn::train::metric::{
-    state::{FormatOptions, NumericMetricState},
     Metric, MetricEntry, MetricMetadata, Numeric,
+    state::{FormatOptions, NumericMetricState},
 };
 
 pub struct NvidiaUtilMetric {

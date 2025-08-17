@@ -6,10 +6,10 @@ use crate::{
 use burn::{
     config::Config,
     module::Module,
-    nn::{loss::MSELoss, loss::Reduction, Linear, LinearConfig},
+    nn::{Linear, LinearConfig, loss::MSELoss, loss::Reduction},
     tensor::{
-        backend::{AutodiffBackend, Backend},
         Distribution, Tensor,
+        backend::{AutodiffBackend, Backend},
     },
 };
 use dataset::{Point, SpiralBatch, ToPoints, ToVec};
