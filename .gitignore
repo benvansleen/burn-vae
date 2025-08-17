@@ -73,3 +73,5 @@ docs/_build/
 /*artifacts*/
 /logs
 /notebooks/.ipynb_checkpoints/
+/.direnv/
+/.pre-commit-config.yaml

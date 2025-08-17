@@ -1,4 +1,6 @@
 [workspace]
+metadata.crane.name = "burn-vae"
+package.version = "0.1.0"
 resolver = "2"
 default-members = ["train"]
 members = [
