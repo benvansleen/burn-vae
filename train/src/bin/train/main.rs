@@ -3,8 +3,8 @@ mod config;
 #[cfg(not(target_family = "wasm"))]
 fn main() {
     use burn::backend::{
-        wgpu::{AutoGraphicsApi, WgpuDevice},
         Autodiff, Fusion, Wgpu,
+        wgpu::{AutoGraphicsApi, WgpuDevice},
     };
 
     use config::config;
@@ -13,13 +13,14 @@ fn main() {
     use train::train;
     use train::{
         load_model,
-        visualization::{plot, Trace},
+        visualization::{Trace, plot},
     };
     type Backend = Fusion<Wgpu<AutoGraphicsApi, f32, i32>>;
     const DEVICE: WgpuDevice = WgpuDevice::BestAvailable;
 
-    let artifacts_dir =
-        &std::env::args().nth(1).unwrap_or("artifacts".to_string());
+    let artifacts_dir = &std::env::args()
+        .nth(1)
+        .unwrap_or("model_artifacts".to_string());
 
     train::<Autodiff<Backend>>(artifacts_dir, config(), &DEVICE);
     let model = load_model::<Backend>(artifacts_dir, &DEVICE);
@@ -41,9 +42,9 @@ fn main() {
     let mut gen_colors = Vec::new();
     (0..N).step_by(MAX_SIZE).for_each(|_| {
         let t = rng.gen_range(min_t..max_t);
-        let gen = model.generate(t, MAX_SIZE, &DEVICE);
-        let n = gen.len();
-        generated.extend(gen);
+        let current_generated = model.generate(t, MAX_SIZE, &DEVICE);
+        let n = current_generated.len();
+        generated.extend(current_generated);
         gen_colors.extend(std::iter::repeat(t).take(n));
     });
 
