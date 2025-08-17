@@ -76,9 +76,9 @@
           (craneLib.fileset.commonCargoSources ./.)
         ];
       in
-      rec {
-        packages = rec {
-          default = train;
+      {
+        packages = {
+          default = self.packages.${system}.train;
           train = craneLib.buildPackage (
             individualCrateArgs
             // {
